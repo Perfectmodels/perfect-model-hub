@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/firebase/client";
+import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from "firebase/firestore";
 import { Loader2 } from "lucide-react";
 
 interface ModelProfile {
@@ -60,33 +61,34 @@ const ModelDashboard = () => {
 
       try {
         // Fetch model profile linked to this user
-        const { data: modelData } = await supabase
-          .from("models")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
+        const q = query(collection(db, "models"), where("user_id", "==", user.id));
+        const querySnapshot = await getDocs(q);
 
-        if (modelData) {
+        if (!querySnapshot.empty) {
+          const modelDoc = querySnapshot.docs[0];
+          const modelData = { id: modelDoc.id, ...modelDoc.data() } as ModelProfile;
           setProfile(modelData);
 
           // Fetch payments
-          const { data: paymentsData } = await supabase
-            .from("payments")
-            .select("*")
-            .eq("model_id", modelData.id)
-            .order("month", { ascending: false })
-            .limit(6);
-
+          const paymentsQuery = query(
+            collection(db, "payments"), 
+            where("model_id", "==", modelData.id), 
+            orderBy("month", "desc"), 
+            limit(6)
+          );
+          const paymentsSnapshot = await getDocs(paymentsQuery);
+          const paymentsData = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Payment));
           setPayments(paymentsData || []);
 
           // Fetch absences
-          const { data: absencesData } = await supabase
-            .from("absences")
-            .select("*")
-            .eq("model_id", modelData.id)
-            .order("date", { ascending: false })
-            .limit(5);
-
+          const absencesQuery = query(
+            collection(db, "absences"), 
+            where("model_id", "==", modelData.id), 
+            orderBy("date", "desc"), 
+            limit(5)
+          );
+          const absencesSnapshot = await getDocs(absencesQuery);
+          const absencesData = absencesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Absence));
           setAbsences(absencesData || []);
         }
       } catch (error) {

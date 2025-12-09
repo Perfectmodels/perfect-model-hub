@@ -1,0 +1,56 @@
+mutation CreateDemoData @transaction @auth(level: USER) {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      displayName: "demouser1",
+      createdAt: "2024-04-26T12:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      displayName: "demouser2",
+      createdAt: "2024-04-26T13:00:00Z"
+    }
+  ])
+  task_insertMany(data: [
+    {
+      id: "650e8400-e29b-41d4-a716-446655440002",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      title: "Task 1 for demouser1",
+      createdAt: "2024-04-26T14:00:00Z",
+      isCompleted: false,
+      dueDate: "2024-05-01"
+    },
+    {
+      id: "650e8400-e29b-41d4-a716-446655440003",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      title: "Task 1 for demouser2",
+      createdAt: "2024-04-26T15:00:00Z",
+      isCompleted: true,
+      dueDate: "2024-04-27"
+    }
+  ])
+  tag_insertMany(data: [
+    {
+      id: "750e8400-e29b-41d4-a716-446655440004",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      name: "Tag 1 for demouser1",
+      createdAt: "2024-04-26T16:00:00Z"
+    },
+    {
+      id: "750e8400-e29b-41d4-a716-446655440005",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      name: "Tag 1 for demouser2",
+      createdAt: "2024-04-26T17:00:00Z"
+    }
+  ])
+  taskTag_insertMany(data: [
+    {
+      taskId: "650e8400-e29b-41d4-a716-446655440002",
+      tagId: "750e8400-e29b-41d4-a716-446655440004"
+    },
+    {
+      taskId: "650e8400-e29b-41d4-a716-446655440003",
+      tagId: "750e8400-e29b-41d4-a716-446655440005"
+    }
+  ])
+}

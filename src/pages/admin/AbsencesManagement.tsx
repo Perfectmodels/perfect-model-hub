@@ -24,10 +24,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/firebase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { collection, getDocs, addDoc, query, orderBy, doc, updateDoc } from "firebase/firestore";
 
 interface Absence {
   id: string;
@@ -63,16 +64,19 @@ const AbsencesManagement = () => {
 
   const fetchData = async () => {
     try {
-      const [absencesRes, modelsRes] = await Promise.all([
-        supabase.from("absences").select("*").order("date", { ascending: false }),
-        supabase.from("models").select("id, name").order("name"),
-      ]);
+        const absencesQuery = query(collection(db, "absences"), orderBy("date", "desc"));
+        const modelsQuery = query(collection(db, "models"), orderBy("name"));
 
-      if (absencesRes.error) throw absencesRes.error;
-      if (modelsRes.error) throw modelsRes.error;
+        const [absencesSnapshot, modelsSnapshot] = await Promise.all([
+            getDocs(absencesQuery),
+            getDocs(modelsQuery),
+        ]);
 
-      setAbsences(absencesRes.data || []);
-      setModels(modelsRes.data || []);
+        const absencesData = absencesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Absence));
+        const modelsData = modelsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Model));
+
+        setAbsences(absencesData || []);
+        setModels(modelsData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
@@ -111,16 +115,15 @@ const AbsencesManagement = () => {
     }
 
     try {
-      const { error } = await supabase.from("absences").insert([{
-        model_id: formData.model_id,
-        model_name: formData.model_name,
-        date: formData.date,
-        reason: formData.reason,
-        is_excused: formData.is_excused,
-        notes: formData.notes || null,
-      }]);
-
-      if (error) throw error;
+        await addDoc(collection(db, "absences"), {
+            model_id: formData.model_id,
+            model_name: formData.model_name,
+            date: formData.date,
+            reason: formData.reason,
+            is_excused: formData.is_excused,
+            notes: formData.notes || null,
+            created_at: new Date().toISOString(),
+        });
 
       toast({ title: "Absence enregistrée" });
       setIsDialogOpen(false);
@@ -138,13 +141,9 @@ const AbsencesManagement = () => {
 
   const toggleExcused = async (id: string, currentValue: boolean) => {
     try {
-      const { error } = await supabase
-        .from("absences")
-        .update({ is_excused: !currentValue })
-        .eq("id", id);
-
-      if (error) throw error;
-      fetchData();
+        const absenceDoc = doc(db, "absences", id);
+        await updateDoc(absenceDoc, { is_excused: !currentValue });
+        fetchData();
     } catch (error) {
       console.error("Error toggling excused:", error);
     }

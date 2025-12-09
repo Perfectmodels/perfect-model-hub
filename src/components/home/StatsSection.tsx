@@ -1,13 +1,7 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-
-const stats = [
-  { value: 50, suffix: "+", label: "Mannequins" },
-  { value: 100, suffix: "+", label: "Projets réalisés" },
-  { value: 25, suffix: "+", label: "Partenaires" },
-  { value: 4, suffix: "", label: "Années d'excellence" },
-];
+import { pagesContent } from "@/content/pages";
 
 function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
   const [count, setCount] = useState(0);
@@ -41,6 +35,7 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export function StatsSection() {
+  const { stats } = pagesContent.home;
   return (
     <section className="py-20 bg-card border-y border-border">
       <div className="container mx-auto px-4 lg:px-8">
