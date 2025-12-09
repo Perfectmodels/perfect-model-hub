@@ -1,151 +1,113 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Perfect Models Management - Design System
+   Primary: pm-gold (#D4AF37)
+   Background: pm-dark (#0a0a0a)
+   All colors MUST be HSL.
 */
 
 @layer base {
   :root {
+    /* Light mode - rarely used, dark is default */
     --background: 0 0% 100%;
-    --foreground: 265 4% 12.9%;
+    --foreground: 0 0% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 265 4% 12.9%;
+    --card-foreground: 0 0% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 265 4% 12.9%;
+    --popover-foreground: 0 0% 4%;
 
-    --primary: 266 4% 20.8%;
-    --primary-foreground: 248 0.3% 98.4%;
+    --primary: 43 70% 52%; /* Gold #D4AF37 */
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 248 0.7% 96.8%;
-    --secondary-foreground: 266 4% 20.8%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 248 0.7% 96.8%;
-    --muted-foreground: 257 4.6% 55.4%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 248 0.7% 96.8%;
-    --accent-foreground: 266 4% 20.8%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
 
-    --destructive: 27 24.5% 57.7%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 256 1.3% 92.9%;
-    --input: 256 1.3% 92.9%;
-    --ring: 257 4% 70.4%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 43 70% 52%;
 
     --radius: 0.625rem;
 
     --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 4%;
+    --sidebar-primary: 43 70% 52%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 43 70% 52%;
 
-    --sidebar-foreground: 265 4% 12.9%;
+    --chart-1: 43 70% 52%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 220 70% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
 
-    --sidebar-primary: 266 4% 20.8%;
-
-    --sidebar-primary-foreground: 248 0.3% 98.4%;
-
-    --sidebar-accent: 248 0.7% 96.8%;
-
-    --sidebar-accent-foreground: 266 4% 20.8%;
-
-    --sidebar-border: 256 1.3% 92.9%;
-
-    --sidebar-ring: 257 4% 70.4%;
-
-    --chart-1: 41 22.2% 64.6%;
-
-    --chart-2: 185 11.8% 60%;
-
-    --chart-3: 227 7% 39.8%;
-
-    --chart-4: 84 18.9% 82.8%;
-
-    --chart-5: 70 18.8% 76.9%;
-
-    --sidebar: 248 0.3% 98.4%;
-
-    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-
-    --font-serif: "EB Garamond", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
-
-    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-
-    --shadow-sm: 0px 1px 13.75px 0px hsl(38, 92%, 50%);
-
-    --shadow: 0px 1px 27.5px 0px hsl(38, 92%, 50%);
-
-    --shadow-md: 0px 1px 41.25px 0px hsl(38, 92%, 50%);
-
-    --shadow-lg: 0px 1px 68.75px 0px hsl(38, 92%, 50%);
-
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-
-    --tracking-normal: 0em;
-
-    --spacing: 0.25rem;
+    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+    --font-mono: "Roboto Mono", ui-monospace, monospace;
   }
 
+  /* Dark Mode - Default theme for PM */
   .dark {
-    --background: 0 0% 15%;
-    --foreground: 248 0.3% 98.4%;
+    --background: 0 0% 4%; /* #0a0a0a */
+    --foreground: 0 0% 95%; /* Off-white */
 
-    --card: 266 4% 20.8%;
-    --card-foreground: 248 0.3% 98.4%;
+    --card: 0 0% 7%; /* Slightly lighter than background */
+    --card-foreground: 0 0% 95%;
 
-    --popover: 266 4% 20.8%;
-    --popover-foreground: 248 0.3% 98.4%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 256 1.3% 92.9%;
-    --primary-foreground: 266 4% 20.8%;
+    --primary: 43 70% 52%; /* Gold #D4AF37 */
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 260 4.1% 27.9%;
-    --secondary-foreground: 248 0.3% 98.4%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 260 4.1% 27.9%;
-    --muted-foreground: 257 4% 70.4%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 260 4.1% 27.9%;
-    --accent-foreground: 248 0.3% 98.4%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 95%;
 
-    --destructive: 22 19.1% 70.4%;
-    --destructive-foreground: 248 0.3% 98.4%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 100% / 10%;
-    --input: 0 0% 100% / 15%;
-    --ring: 264 2.7% 55.1%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 248 0.3% 98.4%;
-    --sidebar-primary: 264 24.3% 48.8%;
-    --sidebar-primary-foreground: 248 0.3% 98.4%;
-    --sidebar-accent: 260 4.1% 27.9%;
-    --sidebar-accent-foreground: 248 0.3% 98.4%;
-    --sidebar-border: 0 0% 100% / 10%;
-    --sidebar-ring: 264 2.7% 55.1%;
-    --chart-1: 264 24.3% 48.8%;
-    --chart-2: 162 17% 69.6%;
-    --chart-3: 70 18.8% 76.9%;
-    --chart-4: 304 26.5% 62.7%;
-    --chart-5: 16 24.6% 64.5%;
-    --sidebar: 266 4% 20.8%;
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
-    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 43 70% 52%;
+
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 43 70% 52%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 43 70% 52%;
+
+    --chart-1: 43 70% 52%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 220 70% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -154,7 +116,60 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    @apply dark;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  /* Gold button styling */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground uppercase font-bold tracking-widest rounded-full 
+           transition-all duration-300 hover:scale-105;
+  }
+
+  /* Outline button with gold border */
+  .btn-outline-gold {
+    @apply bg-transparent border-2 border-primary text-primary rounded-full
+           transition-all duration-300 hover:bg-primary hover:text-primary-foreground;
+  }
+
+  /* Admin input styling */
+  .admin-input {
+    @apply bg-muted border border-border text-foreground rounded-lg
+           focus:border-primary focus:ring-1 focus:ring-primary transition-colors;
+  }
+
+  /* Gold accent border for cards on hover */
+  .card-gold-hover {
+    @apply border border-primary/20 transition-all duration-300
+           hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10;
+  }
+}
+
+@layer utilities {
+  /* Status badge colors */
+  .status-success {
+    @apply bg-emerald-500/20 text-emerald-400;
+  }
+  .status-info {
+    @apply bg-blue-500/20 text-blue-400;
+  }
+  .status-warning {
+    @apply bg-amber-500/20 text-amber-400;
+  }
+  .status-error {
+    @apply bg-red-500/20 text-red-400;
+  }
+  .status-neutral {
+    @apply bg-muted text-muted-foreground;
   }
 }
