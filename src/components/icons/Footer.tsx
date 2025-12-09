@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useData } from '../../contexts/DataContext';
-import { FacebookIcon, InstagramIcon, YoutubeIcon } from './SocialIcons';
+import { useData } from '../../constants/DataContext';
+import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../SocialIcons';
 import { MapPinIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 const Footer: React.FC = () => {

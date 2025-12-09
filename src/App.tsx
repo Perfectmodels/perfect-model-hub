@@ -1,5 +1,4 @@
 
-/** @jsxImportSource @emotion/react */
 import React, { useEffect, lazy, Suspense } from 'react';
 import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -10,9 +9,8 @@ import AIAssistantIcon from './components/AIAssistantIcon';
 import { PWAInstaller } from './components/PWAInstaller';
 import { registerServiceWorker } from './utils/pwa';
 
-// --- Lazy-loaded Pages ---
-
-// Core Pages
+// Lazy-loaded Pages
+// Public Pages
 const Home = lazy(() => import('./pages/Home'));
 const Agency = lazy(() => import('./pages/Agency'));
 const Models = lazy(() => import('./pages/Models'));
@@ -27,17 +25,17 @@ const Casting = lazy(() => import('./pages/Casting'));
 const CastingForm = lazy(() => import('./pages/CastingForm'));
 const FashionDayApplicationForm = lazy(() => import('./pages/FashionDayApplicationForm'));
 const Login = lazy(() => import('./pages/Login'));
+const Chat = lazy(() => import('./pages/Chat'));
+const Gallery = lazy(() => import('./pages/Gallery'));
+
+// Student-only Pages
 const Activity = lazy(() => import('./pages/Activity')); // Renamed Formations
 const ChapterDetail = lazy(() => import('./pages/ChapterDetail'));
 const ModelDashboard = lazy(() => import('./pages/ModelDashboard')); // Profil
 const ClassroomForum = lazy(() => import('./pages/ClassroomForum'));
 const ForumThread = lazy(() => import('./pages/ForumThread'));
-const Chat = lazy(() => import('./pages/Chat'));
-const ImageGeneration = lazy(() => import('./pages/ImageGeneration'));
-const ImageAnalysis = lazy(() => import('./pages/ImageAnalysis'));
-const LiveChat = lazy(() => import('./pages/LiveChat'));
 
-// Admin Pages
+// Admin-only Pages
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgency = lazy(() => import('./pages/AdminAgency'));
 const AdminCasting = lazy(() => import('./pages/AdminCasting'));
@@ -59,8 +57,11 @@ const AdminPayments = lazy(() => import('./pages/AdminPayments'));
 const AdminAbsences = lazy(() => import('./pages/AdminAbsences'));
 const AdminArtisticDirection = lazy(() => import('./pages/AdminArtisticDirection'));
 const AdminMailing = lazy(() => import('./pages/AdminMailing'));
+const ImageGeneration = lazy(() => import('./pages/ImageGeneration'));
+const ImageAnalysis = lazy(() => import('./pages/ImageAnalysis'));
+const LiveChat = lazy(() => import('./pages/LiveChat'));
 
-// Role-specific pages
+// Role-specific Pages
 const JuryCasting = lazy(() => import('./pages/JuryCasting'));
 const RegistrationCasting = lazy(() => import('./pages/RegistrationCasting'));
 
@@ -69,8 +70,9 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-// --- Utility Components ---
-
+/**
+ * A component that scrolls the window to the top on every route change.
+ */
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -79,28 +81,32 @@ const ScrollToTop: React.FC = () => {
   return null;
 };
 
+/**
+ * A fallback component to display while lazy-loaded pages are being loaded.
+ */
 const LoadingFallback: React.FC = () => (
     <div className="w-full h-screen flex items-center justify-center bg-pm-dark">
         <p className="text-pm-gold text-2xl font-playfair animate-pulse">Chargement...</p>
     </div>
 );
 
-// --- Page Transitions ---
-
+// Animation variants for page transitions.
 const pageVariants = {
     initial: { opacity: 0 },
     in: { opacity: 1 },
     out: { opacity: 0 }
 };
 
+// Animation transition settings.
 const pageTransition = {
     type: "tween",
     ease: "anticipate",
     duration: 0.5
 };
 
-// --- Animated Routes ---
-
+/**
+ * Component that defines all the animated routes for the application.
+ */
 const AnimatedRoutes: React.FC = () => {
     const location = useLocation();
     return (
@@ -132,6 +138,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="/terms-of-use" element={<TermsOfUse />} />
                     <Route path="/chat" element={<Chat />} />
+                    <Route path="/gallery" element={<Gallery />} />
 
                     {/* Protected Routes */}
                     <Route path="/formations" element={<ProtectedRoute role="student"><Activity /></ProtectedRoute>} />
@@ -159,7 +166,7 @@ const AnimatedRoutes: React.FC = () => {
                     <Route path="/admin/model-access" element={<ProtectedRoute role="admin"><AdminModelAccess /></ProtectedRoute>} />
                     <Route path="/admin/recovery-requests" element={<ProtectedRoute role="admin"><AdminRecovery /></ProtectedRoute>} />
                     <Route path="/admin/comments" element={<ProtectedRoute role="admin"><AdminComments /></ProtectedRoute>} />
-                    <Route path="/admin/messages" element={<ProtectedRoute role="admin"><AdminMessages /></ProtectedRoute>} />
+                    <Route path_="/admin/messages" element={<ProtectedRoute role="admin"><AdminMessages /></ProtectedRoute>} />
                     <Route path="/admin/bookings" element={<ProtectedRoute role="admin"><AdminBookings /></ProtectedRoute>} />
                     <Route path="/admin/payments" element={<ProtectedRoute role="admin"><AdminPayments /></ProtectedRoute>} />
                     <Route path="/admin/absences" element={<ProtectedRoute role="admin"><AdminAbsences /></ProtectedRoute>} />
@@ -177,13 +184,15 @@ const AnimatedRoutes: React.FC = () => {
     );
 };
 
-// --- App Content ---
-
+/**
+ * Main content component that includes the layout and animated routes.
+ * It also handles dynamic browser tab titles based on notifications.
+ */
 const AppContent: React.FC = () => {
     const location = useLocation();
     const { data } = useData();
 
-    // Browser tab title notification logic
+    // Effect to update the browser tab title with notification counts for admin pages.
     useEffect(() => {
         const originalTitle = "Perfect Models Management";
         if (data && location.pathname.startsWith('/admin')) {
@@ -201,16 +210,18 @@ const AppContent: React.FC = () => {
                 document.title = `Admin | ${originalTitle}`;
             }
         } else {
-            // Restore title if not on an admin page
+            // Restore the original title if not on an admin page.
             if (document.title.startsWith('(') || document.title.startsWith('Admin |')) {
                  document.title = originalTitle;
             }
         }
         
+        // Cleanup function to restore the original title when the component unmounts.
         return () => {
             document.title = originalTitle;
         };
     }, [location.pathname, data]);
+
 
     return (
         <Layout>
@@ -222,9 +233,12 @@ const AppContent: React.FC = () => {
     );
 }
 
-// --- Main App Component ---
-
+/**
+ * The root component of the application.
+ * It sets up the data provider, router, and service worker.
+ */
 const App: React.FC = () => {
+
   useEffect(() => {
     registerServiceWorker();
   }, []);

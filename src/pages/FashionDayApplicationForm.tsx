@@ -1,9 +1,8 @@
 
-
 import React, { useState } from 'react';
 import SEO from '../components/SEO';
 import { useData } from '../contexts/DataContext';
-import { FashionDayApplication, FashionDayApplicationRole } from '../types';
+import { FashionDayApplication, FashionDayApplicationRole } from '../../types';
 import { Link } from 'react-router-dom';
 
 const FashionDayApplicationForm: React.FC = () => {

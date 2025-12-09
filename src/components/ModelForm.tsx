@@ -1,23 +1,33 @@
+
 import React, { useState, useEffect } from 'react';
-import { Model, ModelDistinction } from '../types';
+import { Model, ModelDistinction } from '../../types';
 import ImageUploader from './ImageUploader';
 import { ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
+/**
+ * Props for the ModelForm component.
+ */
 interface ModelFormProps {
-    model: Model;
-    onSave: (model: Model) => void;
-    onCancel: () => void;
-    isCreating: boolean;
-    mode: 'admin' | 'model';
+    model: Model;                // The model data to be displayed and edited.
+    onSave: (model: Model) => void; // Callback to save the model data.
+    onCancel: () => void;            // Callback to cancel editing.
+    isCreating: boolean;         // Flag to indicate if creating a new model.
+    mode: 'admin' | 'model';       // Determines the editing mode: 'admin' or 'model'.
 }
 
+/**
+ * A form for creating and updating model profiles.
+ * It adapts its fields and permissions based on whether an admin or a model is using it.
+ */
 const ModelForm: React.FC<ModelFormProps> = ({ model, onSave, onCancel, isCreating, mode }) => {
     const [formData, setFormData] = useState<Model>(model);
 
+    // Effect to update form data when the model prop changes.
     useEffect(() => {
         setFormData(model);
     }, [model]);
 
+    // Generic change handler for most form inputs.
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         
@@ -30,6 +40,7 @@ const ModelForm: React.FC<ModelFormProps> = ({ model, onSave, onCancel, isCreati
         }
     };
 
+    // Handler for changes in the nested 'measurements' object.
     const handleMeasurementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -41,6 +52,7 @@ const ModelForm: React.FC<ModelFormProps> = ({ model, onSave, onCancel, isCreati
         }));
     };
 
+    // Handler for array fields that are input as comma-separated strings.
     const handleArrayChange = (name: 'categories', value: string) => {
         setFormData(prev => ({
             ...prev,
@@ -48,6 +60,7 @@ const ModelForm: React.FC<ModelFormProps> = ({ model, onSave, onCancel, isCreati
         }));
     };
 
+    // Handlers for managing the portfolio images array.
     const handlePortfolioImagesChange = (index: number, value: string) => {
         const newImages = [...(formData.portfolioImages || [])];
         newImages[index] = value;
@@ -62,10 +75,12 @@ const ModelForm: React.FC<ModelFormProps> = ({ model, onSave, onCancel, isCreati
         setFormData(prev => ({ ...prev, portfolioImages: (prev.portfolioImages || []).filter((_, i) => i !== index) }));
     };
 
+    // Handler for the main profile image.
     const handleImageChange = (value: string) => {
         setFormData(prev => ({ ...prev, imageUrl: value }));
     };
 
+    // Form submission handler.
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave(formData);
@@ -217,6 +232,9 @@ const ModelForm: React.FC<ModelFormProps> = ({ model, onSave, onCancel, isCreati
     );
 };
 
+/**
+ * A reusable component to create a titled section within the form.
+ */
 const Section: React.FC<{title: string, children: React.ReactNode}> = ({title, children}) => (
     <div className="pt-8 first:pt-0">
         <h2 className="admin-section-title">{title}</h2>
@@ -224,6 +242,9 @@ const Section: React.FC<{title: string, children: React.ReactNode}> = ({title, c
     </div>
 );
 
+/**
+ * A reusable input component for the form.
+ */
 const FormInput: React.FC<{label: string, name: string, value: any, onChange: any, type?: string, disabled?: boolean}> = (props) => (
     <div>
         <label htmlFor={props.name} className="admin-label">{props.label}</label>
@@ -231,6 +252,9 @@ const FormInput: React.FC<{label: string, name: string, value: any, onChange: an
     </div>
 );
 
+/**
+ * A reusable select component for the form.
+ */
 const FormSelect: React.FC<{label: string, name: string, value: any, onChange: any, children: React.ReactNode, disabled?: boolean}> = (props) => (
      <div>
         <label htmlFor={props.name} className="admin-label">{props.label}</label>
@@ -240,6 +264,9 @@ const FormSelect: React.FC<{label: string, name: string, value: any, onChange: a
     </div>
 );
 
+/**
+ * A reusable textarea component for the form.
+ */
 const FormTextArea: React.FC<{label: string, name: string, value: any, onChange: any, rows?: number, disabled?: boolean}> = (props) => (
     <div>
         <div className="flex justify-between items-center mb-1">
@@ -249,6 +276,9 @@ const FormTextArea: React.FC<{label: string, name: string, value: any, onChange:
     </div>
 );
 
+/**
+ * A reusable editor for arrays of complex objects, like 'distinctions'.
+ */
 const ArrayEditor: React.FC<{
     items: any[];
     setItems: (items: any[]) => void;
@@ -258,7 +288,7 @@ const ArrayEditor: React.FC<{
 }> = ({ items, setItems, renderItem, getNewItem, getItemTitle }) => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-    const handleItemChange = (index: number, newItem: any) => {
+    const handleUpdateItem = (index: number, newItem: any) => {
         const newItems = [...items];
         newItems[index] = newItem;
         setItems(newItems);
@@ -285,7 +315,7 @@ const ArrayEditor: React.FC<{
                     </button>
                     {openIndex === index && (
                         <div className="p-4 border-t border-pm-off-white/10 space-y-3 bg-pm-dark">
-                            {renderItem(item, (newItem) => handleItemChange(index, newItem), index)}
+                            {renderItem(item, (newItem) => handleUpdateItem(index, newItem), index)}
                             <div className="text-right pt-2">
                                 <button type="button" onClick={() => handleDeleteItem(index)} className="text-red-500/80 hover:text-red-500 text-sm inline-flex items-center gap-1"><TrashIcon className="w-4 h-4" /> Supprimer</button>
                             </div>

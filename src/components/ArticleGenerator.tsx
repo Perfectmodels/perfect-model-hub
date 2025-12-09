@@ -1,15 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
-import { Article } from '../types';
+import { Article } from '../../types';
 import CloseIcon from './icons/CloseIcon';
 import { SparklesIcon } from '@heroicons/react/24/solid';
 
+// Props for the ArticleGenerator component
 interface ArticleGeneratorProps {
     isOpen: boolean;
     onClose: () => void;
     onArticleGenerated: (articleData: Partial<Article>) => void;
 }
 
+// Reusable TextArea component for the form
 const FormTextArea: React.FC<{label: string, name: string, value: any, onChange: any, rows: number}> = ({label, name, value, onChange, rows}) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-pm-off-white/70 mb-1">{label}</label>
@@ -17,7 +19,9 @@ const FormTextArea: React.FC<{label: string, name: string, value: any, onChange:
     </div>
 );
 
+// Component to generate an article using AI
 const ArticleGenerator: React.FC<ArticleGeneratorProps> = ({ isOpen, onClose, onArticleGenerated }) => {
+    // State for form data, loading status, and errors
     const [formData, setFormData] = useState({
         subject: '',
         bio: '',
@@ -29,14 +33,17 @@ const ArticleGenerator: React.FC<ArticleGeneratorProps> = ({ isOpen, onClose, on
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Handle changes in the form text areas
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
+    // Function to generate the article using the AI model
     const handleGenerate = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         
+        // Construct the prompt with detailed instructions for the AI
         const prompt = `
             Tu es un assistant IA pour un site web de mode et d'événementiel (Perfect Models Management) basé au Gabon. 
             Ton rôle est de générer un article complet et formaté en JSON.
@@ -61,6 +68,7 @@ const ArticleGenerator: React.FC<ArticleGeneratorProps> = ({ isOpen, onClose, on
             Génère l'article en respectant scrupuleusement le schéma JSON.
         `;
         
+        // Define the JSON schema for the expected response
         const responseSchema = {
             type: Type.OBJECT,
             properties: {
@@ -127,6 +135,7 @@ const ArticleGenerator: React.FC<ArticleGeneratorProps> = ({ isOpen, onClose, on
         return null;
     }
 
+    // JSX to render the modal
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
             <div className="bg-pm-dark border border-pm-gold/30 rounded-lg shadow-2xl shadow-pm-gold/10 w-full max-w-3xl max-h-[90vh] flex flex-col">

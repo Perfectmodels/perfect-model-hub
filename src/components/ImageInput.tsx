@@ -1,14 +1,22 @@
 import React from 'react';
 import { PhotoIcon } from '@heroicons/react/24/outline';
 
+/**
+ * Props for the ImageInput component.
+ */
 interface ImageInputProps {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
+    label: string;          // The label to display for the input field.
+    value: string;          // The current URL of the image.
+    onChange: (value: string) => void; // Callback function to handle URL changes.
 }
 
+/**
+ * A component for inputting an image URL with a preview.
+ * It includes a text input for the URL and a designated area to show the image.
+ */
 const ImageInput: React.FC<ImageInputProps> = ({ label, value, onChange }) => {
 
+    // Handles changes to the input field and updates the parent component's state.
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.value);
     };
@@ -17,6 +25,7 @@ const ImageInput: React.FC<ImageInputProps> = ({ label, value, onChange }) => {
         <div>
             <label className="admin-label">{label}</label>
             <div className="flex items-center gap-4">
+                {/* Image preview section */}
                 <div className="w-24 h-24 flex-shrink-0 bg-black border border-pm-off-white/20 rounded-md flex items-center justify-center">
                     {value ? (
                         <img src={value} alt="Prévisualisation" className="w-full h-full object-cover rounded-md" />
@@ -24,6 +33,7 @@ const ImageInput: React.FC<ImageInputProps> = ({ label, value, onChange }) => {
                         <PhotoIcon className="w-10 h-10 text-pm-off-white/30" />
                     )}
                 </div>
+                {/* Input for the image URL */}
                 <div className="flex-grow">
                     <input
                         type="text"

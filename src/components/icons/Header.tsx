@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate, useParams } from 'react-router
 import { useData } from '../../contexts/DataContext';
 import { ArrowRightOnRectangleIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import AnimatedHamburgerIcon from './AnimatedHamburgerIcon';
-import { FacebookIcon, InstagramIcon, YoutubeIcon } from './SocialIcons';
+import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../SocialIcons';
 import { NavLink as NavLinkType, SocialLinks } from '../../types';
 
 const NavLinkItem: React.FC<{ to: string; label: string; onClick?: () => void; isMobile?: boolean; isOpen?: boolean; delay?: number; }> = ({ to, label, onClick, isMobile = false, isOpen = false, delay = 0 }) => {
@@ -216,7 +216,7 @@ const Header: React.FC = () => {
       const menu = mobileMenuRef.current;
       if (!menu) return;
       
-      const focusableElements = menu.querySelectorAll<HTMLElement>(focusableElementsQuery);
+      const focusableElements = menu.querySelectorAll(focusableElementsQuery) as NodeListOf<HTMLElement>;
       if (focusableElements.length === 0) return;
 
       const firstElement = focusableElements[0];
@@ -293,7 +293,7 @@ const Header: React.FC = () => {
   const socialLinks = data?.socialLinks;
 
   const processedNavLinks = useMemo(() => {
-    return navLinksFromData.map(link => {
+    const baseLinks = navLinksFromData.map(link => {
         if (link.label === 'Classroom') {
             if (userRole === 'student') return { ...link, label: 'Mon Profil', path: '/profil' };
             if (userRole === 'admin') return { ...link, path: '/admin/classroom' };
@@ -301,6 +301,9 @@ const Header: React.FC = () => {
         }
         return link;
     }).filter((link): link is NavLinkType => link !== null);
+
+    baseLinks.push({ path: '/gallery', label: 'Galerie' });
+    return baseLinks;
   }, [navLinksFromData, userRole]);
 
   const applyButtonDelay = 150 + processedNavLinks.length * 50;

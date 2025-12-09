@@ -1,39 +1,57 @@
-import React, { useEffect } from 'react';
-import { CastingApplication, JuryMember, JuryScore } from '../types';
-import { useData } from '../contexts/DataContext';
 
+import React, { useEffect } from 'react';
+import { CastingApplication, JuryMember, JuryScore } from '../../types'; // FIX: Corrected import path for types.
+import { useData } from '../constants/DataContext';
+
+/**
+ * Props for the PrintableCastingSheet component.
+ */
 interface PrintableCastingSheetProps {
-    app: CastingApplication;
-    juryMembers: JuryMember[];
-    onDonePrinting: () => void;
+    app: CastingApplication; // The casting application data for the candidate.
+    juryMembers: JuryMember[]; // A list of all jury members.
+    onDonePrinting: () => void; // Callback function to execute after printing is done.
 }
 
+/**
+ * A component that formats and displays a casting application as a printable sheet.
+ * It automatically triggers the print dialog when rendered.
+ */
 const PrintableCastingSheet: React.FC<PrintableCastingSheetProps> = ({ app, juryMembers, onDonePrinting }) => {
-    const { data } = useData();
+    const { data } = useData(); // Hook to access global application data.
 
+    // Effect to handle the printing process.
     useEffect(() => {
+        // Function to be called after the user has finished printing.
         const handleAfterPrint = () => {
             onDonePrinting();
             window.removeEventListener('afterprint', handleAfterPrint);
         };
         window.addEventListener('afterprint', handleAfterPrint);
         
+        // Set a timer to ensure the content is rendered before printing.
         const timer = setTimeout(() => {
             window.print();
         }, 500);
 
+        // Cleanup function to remove event listeners and clear timeouts.
         return () => {
             clearTimeout(timer);
             window.removeEventListener('afterprint', handleAfterPrint);
         };
     }, [onDonePrinting]);
     
+    /**
+     * Calculates the age of the candidate based on their birth date.
+     * @param birthDate - The birth date of the candidate.
+     * @returns The age of the candidate in years, or 'N/A' if the birth date is not provided.
+     */
     const calculateAge = (birthDate: string): string => {
         if (!birthDate) return 'N/A';
         const age = new Date().getFullYear() - new Date(birthDate).getFullYear();
         return `${age} ans`;
     };
     
+    // Process jury scores to calculate the average and determine a provisional decision.
     const juryScores: [string, JuryScore][] = app.scores ? Object.entries(app.scores) : [];
     const overallScores = juryScores.map(([, score]) => score.overall);
     const averageScore = overallScores.length > 0 ? (overallScores.reduce((a, b) => a + b, 0) / overallScores.length) : 0;
