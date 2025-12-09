@@ -15,8 +15,10 @@ import FashionDay from "./pages/FashionDay";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ModelDashboard from "./pages/ModelDashboard";
 import Dashboard from "./pages/admin/Dashboard";
 import CastingApplications from "./pages/admin/CastingApplications";
+import CastingLive from "./pages/admin/CastingLive";
 import ModelsManagement from "./pages/admin/ModelsManagement";
 import PaymentsManagement from "./pages/admin/PaymentsManagement";
 import AbsencesManagement from "./pages/admin/AbsencesManagement";
@@ -43,8 +45,10 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/model-dashboard" element={<ModelDashboard />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/casting" element={<CastingApplications />} />
+            <Route path="/admin/casting-live" element={<CastingLive />} />
             <Route path="/admin/models" element={<ModelsManagement />} />
             <Route path="/admin/payments" element={<PaymentsManagement />} />
             <Route path="/admin/absences" element={<AbsencesManagement />} />
