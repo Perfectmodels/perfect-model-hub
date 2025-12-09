@@ -7,6 +7,7 @@ import {
   CalendarX,
   LogOut,
   ChevronLeft,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const navigation = [
   { name: "Tableau de bord", href: "/admin", icon: LayoutDashboard },
   { name: "Candidatures", href: "/admin/casting", icon: UserCheck },
+  { name: "Casting Live", href: "/admin/casting-live", icon: Radio },
   { name: "Mannequins", href: "/admin/models", icon: Users },
   { name: "Paiements", href: "/admin/payments", icon: CreditCard },
   { name: "Absences", href: "/admin/absences", icon: CalendarX },
