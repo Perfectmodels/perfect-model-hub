@@ -44,11 +44,17 @@ export function FeaturedModelsSection() {
                 to={`/models/${model.id}`}
                 className="group block relative overflow-hidden rounded-lg aspect-[3/4] bg-muted"
               >
-                <img
-                  src={model.imageUrl}
-                  alt={model.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
+                <motion.div
+                  className="w-full h-full"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <img
+                    src={model.imageUrl}
+                    alt={model.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </motion.div>
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
                 
                 {/* Content */}
