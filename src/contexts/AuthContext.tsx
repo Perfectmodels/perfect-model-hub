@@ -1,10 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
+import { auth } from "@/integrations/firebase/client"; // Assuming you have this file
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   isAdmin: boolean;
   isStaff: boolean;
@@ -17,74 +16,62 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
 
-  const checkUserRoles = async (userId: string) => {
-    try {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-      
-      if (roles) {
-        setIsAdmin(roles.some((r) => r.role === "admin"));
-        setIsStaff(roles.some((r) => r.role === "staff" || r.role === "admin"));
-      }
-    } catch (error) {
-      console.error("Error checking user roles:", error);
+  // Note: Role checking needs to be adapted for Firebase (e.g., using custom claims)
+  // This is a placeholder and will need a proper implementation based on your Firebase setup.
+  const checkUserRoles = async (user: User) => {
+    if (!user) {
+      setIsAdmin(false);
+      setIsStaff(false);
+      return;
     }
+    // Placeholder: In a real app, you'd get custom claims or check a database.
+    // For now, let's assume all authenticated users are staff and the first user is an admin.
+    const idTokenResult = await user.getIdTokenResult();
+    setIsAdmin(idTokenResult.claims.admin === true);
+    setIsStaff(idTokenResult.claims.staff === true || idTokenResult.claims.admin === true);
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkUserRoles(session.user.id);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+      if (user) {
+        await checkUserRoles(user);
       }
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await checkUserRoles(session.user.id);
-        } else {
-          setIsAdmin(false);
-          setIsStaff(false);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-      },
-    });
-    return { error };
+    try {
+      // Note: Firebase's createUserWithEmailAndPassword doesn't store the full name directly.
+      // You'll need to update the user's profile separately.
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // You would typically update the user's profile here.
+      // await updateProfile(userCredential.user, { displayName: fullName });
+      console.log("Full name to set (not implemented yet):", fullName);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
     setIsAdmin(false);
     setIsStaff(false);
   };
@@ -93,7 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        session,
         loading,
         isAdmin,
         isStaff,

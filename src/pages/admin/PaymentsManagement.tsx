@@ -22,10 +22,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/firebase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { collection, getDocs, addDoc, query, orderBy } from "firebase/firestore";
 
 interface Payment {
   id: string;
@@ -71,16 +72,19 @@ const PaymentsManagement = () => {
 
   const fetchData = async () => {
     try {
-      const [paymentsRes, modelsRes] = await Promise.all([
-        supabase.from("payments").select("*").order("created_at", { ascending: false }),
-        supabase.from("models").select("id, name").order("name"),
-      ]);
+        const paymentsQuery = query(collection(db, "payments"), orderBy("created_at", "desc"));
+        const modelsQuery = query(collection(db, "models"), orderBy("name"));
 
-      if (paymentsRes.error) throw paymentsRes.error;
-      if (modelsRes.error) throw modelsRes.error;
+        const [paymentsSnapshot, modelsSnapshot] = await Promise.all([
+            getDocs(paymentsQuery),
+            getDocs(modelsQuery),
+        ]);
 
-      setPayments(paymentsRes.data || []);
-      setModels(modelsRes.data || []);
+        const paymentsData = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Payment));
+        const modelsData = modelsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Model));
+
+        setPayments(paymentsData || []);
+        setModels(modelsData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
@@ -119,7 +123,7 @@ const PaymentsManagement = () => {
     }
 
     try {
-      const { error } = await supabase.from("payments").insert([{
+      await addDoc(collection(db, "payments"), {
         model_id: formData.model_id,
         model_name: formData.model_name,
         amount: parseFloat(formData.amount),
@@ -128,9 +132,8 @@ const PaymentsManagement = () => {
         method: formData.method,
         status: formData.status,
         category: formData.category,
-      }]);
-
-      if (error) throw error;
+        created_at: new Date().toISOString(),
+      });
 
       toast({ title: "Paiement enregistré" });
       setIsDialogOpen(false);

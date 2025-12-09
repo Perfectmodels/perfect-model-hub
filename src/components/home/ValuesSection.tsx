@@ -1,7 +1,13 @@
 import { motion } from "framer-motion";
+import { pagesContent } from "@/content/pages";
 import { agencyInfo } from "@/lib/data";
+import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 export function ValuesSection() {
+  const { introduction } = pagesContent.home;
+  
   return (
     <section className="py-20 lg:py-32">
       <div className="container mx-auto px-4 lg:px-8">
@@ -14,14 +20,17 @@ export function ValuesSection() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Notre Vision
+              {introduction.title}
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              {agencyInfo.about.p1}
+              {introduction.text}
             </p>
-            <p className="text-muted-foreground leading-relaxed">
-              {agencyInfo.about.p2}
-            </p>
+            <Button asChild>
+              <Link to={introduction.cta.href}>
+                {introduction.cta.text}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
           </motion.div>
 
           {/* Values Grid */}

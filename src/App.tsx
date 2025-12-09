@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
+import HomePage from "./pages/public/HomePage";
 import Models from "./pages/Models";
 import ModelDetail from "./pages/ModelDetail";
 import Casting from "./pages/Casting";
@@ -23,6 +23,8 @@ import ModelsManagement from "./pages/admin/ModelsManagement";
 import PaymentsManagement from "./pages/admin/PaymentsManagement";
 import AbsencesManagement from "./pages/admin/AbsencesManagement";
 import NotFound from "./pages/NotFound";
+import ModelForm from "./pages/admin/ModelForm";
+import CastingApplicationForm from "./pages/admin/CastingApplicationForm";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +36,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/models" element={<Models />} />
             <Route path="/models/:id" element={<ModelDetail />} />
             <Route path="/casting" element={<Casting />} />
@@ -48,8 +50,12 @@ const App = () => (
             <Route path="/model-dashboard" element={<ModelDashboard />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/casting" element={<CastingApplications />} />
+            <Route path="/admin/casting-applications/new" element={<CastingApplicationForm />} />
+            <Route path="/admin/casting-applications/edit/:id" element={<CastingApplicationForm />} />
             <Route path="/admin/casting-live" element={<CastingLive />} />
             <Route path="/admin/models" element={<ModelsManagement />} />
+            <Route path="/admin/models/new" element={<ModelForm />} />
+            <Route path="/admin/models/edit/:id" element={<ModelForm />} />
             <Route path="/admin/payments" element={<PaymentsManagement />} />
             <Route path="/admin/absences" element={<AbsencesManagement />} />
             <Route path="*" element={<NotFound />} />

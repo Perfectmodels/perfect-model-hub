@@ -5,7 +5,8 @@ import { Search, Filter, User, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/integrations/firebase/client";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 
 interface Model {
   id: string;
@@ -28,14 +29,11 @@ const Models = () => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const { data, error } = await supabase
-          .from("models")
-          .select("id, name, gender, height, level, image_url, categories, is_public")
-          .eq("is_public", true)
-          .order("name");
-
-        if (error) throw error;
-        setModels(data || []);
+        const modelsCollection = collection(db, "models");
+        const q = query(modelsCollection, where("is_public", "==", true), orderBy("name"));
+        const querySnapshot = await getDocs(q);
+        const modelsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Model));
+        setModels(modelsData);
       } catch (error) {
         console.error("Error fetching models:", error);
       } finally {
