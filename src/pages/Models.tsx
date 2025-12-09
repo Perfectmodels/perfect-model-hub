@@ -1,22 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, User, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { featuredModels } from "@/lib/data";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Model {
+  id: string;
+  name: string;
+  gender: string;
+  height: string | null;
+  level: string | null;
+  image_url: string | null;
+  categories: string[] | null;
+  is_public: boolean | null;
+}
 
 const Models = () => {
+  const [models, setModels] = useState<Model[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [levelFilter, setLevelFilter] = useState<string>("all");
 
-  const filteredModels = featuredModels.filter((model) => {
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("models")
+          .select("id, name, gender, height, level, image_url, categories, is_public")
+          .eq("is_public", true)
+          .order("name");
+
+        if (error) throw error;
+        setModels(data || []);
+      } catch (error) {
+        console.error("Error fetching models:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  const filteredModels = models.filter((model) => {
     const matchesSearch = model.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGender = genderFilter === "all" || model.gender === genderFilter;
     const matchesLevel = levelFilter === "all" || model.level === levelFilter;
-    return matchesSearch && matchesGender && matchesLevel && model.isPublic;
+    return matchesSearch && matchesGender && matchesLevel;
   });
 
   return (
@@ -90,51 +124,59 @@ const Models = () => {
       {/* Models Grid */}
       <section className="py-12 lg:py-20">
         <div className="container mx-auto px-4 lg:px-8">
-          {filteredModels.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredModels.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredModels.map((model, index) => (
                 <motion.div
                   key={model.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.05 }}
+                  transition={{ duration: 0.6, delay: index * 0.03 }}
                 >
                   <Link
                     to={`/models/${model.id}`}
-                    className="group block relative overflow-hidden rounded-xl aspect-[3/4] bg-muted"
+                    className="group block relative overflow-hidden rounded-xl aspect-[3/4] bg-muted card-gold-hover"
                   >
-                    <img
-                      src={model.imageUrl}
-                      alt={model.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                    {model.image_url ? (
+                      <img
+                        src={model.image_url}
+                        alt={model.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <User className="h-20 w-20 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
                     
                     {/* Content */}
                     <div className="absolute bottom-0 left-0 right-0 p-5">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 rounded-full bg-accent/80 backdrop-blur-sm text-accent-foreground text-xs font-medium">
-                            {model.level}
+                          <span className="px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                            {model.level || "Débutant"}
                           </span>
-                          <span className="px-2 py-1 rounded-full bg-accent/80 backdrop-blur-sm text-accent-foreground text-xs font-medium">
+                          <span className="px-2 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
                             {model.gender}
                           </span>
                         </div>
                         <h3 className="font-serif text-lg font-semibold text-foreground">
                           {model.name}
                         </h3>
-                        <div className="flex items-center gap-3 text-muted-foreground text-sm">
-                          <span>{model.height}</span>
-                          <span className="w-1 h-1 rounded-full bg-muted-foreground" />
-                          <span>{model.categories[0]}</span>
-                        </div>
+                        {model.height && (
+                          <p className="text-muted-foreground text-sm">{model.height}</p>
+                        )}
                       </div>
                     </div>
 
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm shadow-lg">
+                      <span className="btn-primary px-5 py-2.5 text-sm shadow-lg">
                         Voir le profil
                       </span>
                     </div>
