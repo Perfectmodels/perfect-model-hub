@@ -1,201 +1,91 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Search, Filter, User, Loader2 } from "lucide-react";
-import { Layout } from "@/components/layout/Layout";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { db } from "@/integrations/firebase/client";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import React, { useState, useMemo } from 'react';
+import ModelCard from '../components/ModelCard';
+import SEO from '../components/SEO';
+import { useData } from '../contexts/DataContext';
 
-interface Model {
-  id: string;
-  name: string;
-  gender: string;
-  height: string | null;
-  level: string | null;
-  image_url: string | null;
-  categories: string[] | null;
-  is_public: boolean | null;
-}
+type GenderFilter = 'Tous' | 'Femme' | 'Homme';
 
-const Models = () => {
-  const [models, setModels] = useState<Model[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [genderFilter, setGenderFilter] = useState<string>("all");
-  const [levelFilter, setLevelFilter] = useState<string>("all");
+const Models: React.FC = () => {
+  const { data, isInitialized } = useData();
+  const [filter, setFilter] = useState<GenderFilter>('Tous');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        const modelsCollection = collection(db, "models");
-        const q = query(modelsCollection, where("is_public", "==", true), orderBy("name"));
-        const querySnapshot = await getDocs(q);
-        const modelsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Model));
-        setModels(modelsData);
-      } catch (error) {
-        console.error("Error fetching models:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const models = data?.models || [];
+  
+  const publicModels = useMemo(() => models.filter(model => model.isPublic === true), [models]);
 
-    fetchModels();
-  }, []);
+  const filteredModels = useMemo(() => {
+    return publicModels
+      .filter(model => filter === 'Tous' || model.gender === filter)
+      .filter(model => model.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [filter, searchTerm, publicModels]);
+  
+  const seoDescription = useMemo(() => {
+      const modelNames = publicModels.slice(0, 3).map(m => m.name).join(', ');
+      return `Découvrez le portfolio des mannequins de Perfect Models Management, incluant ${modelNames} et bien d'autres. Des visages uniques et professionnels prêts à incarner votre marque au Gabon.`;
+  }, [publicModels]);
 
-  const filteredModels = models.filter((model) => {
-    const matchesSearch = model.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGender = genderFilter === "all" || model.gender === genderFilter;
-    const matchesLevel = levelFilter === "all" || model.level === levelFilter;
-    return matchesSearch && matchesGender && matchesLevel;
-  });
+  const FilterButton: React.FC<{ gender: GenderFilter }> = ({ gender }) => (
+    <button
+      onClick={() => setFilter(gender)}
+      aria-pressed={filter === gender}
+      className={`px-6 py-2 text-sm uppercase tracking-widest rounded-full transition-all duration-300 transform hover:scale-105 ${filter === gender ? 'bg-pm-gold text-pm-dark shadow-md shadow-pm-gold/30' : 'bg-black border border-pm-gold text-pm-gold hover:bg-pm-gold hover:text-pm-dark'}`}
+    >
+      {gender}
+    </button>
+  );
+
+  if (!isInitialized) {
+      return <div className="min-h-screen flex items-center justify-center text-pm-gold">Chargement des mannequins...</div>;
+  }
 
   return (
-    <Layout>
-      {/* Hero */}
-      <section className="pt-12 pb-8 lg:pt-20 lg:pb-12 bg-card border-b border-border">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Nos Mannequins
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Découvrez les talents qui font la fierté de Perfect Models Management
-            </p>
-          </motion.div>
-        </div>
-      </section>
+    <div className="bg-pm-dark text-pm-off-white min-h-screen">
+      <SEO 
+        title="Nos Mannequins | Le Visage de la Mode Gabonaise"
+        description={seoDescription}
+        keywords="mannequins hommes gabon, mannequins femmes gabon, book mannequins, agence de modèles photo, casting modèles libreville"
+        image={publicModels[0]?.imageUrl || data?.siteImages.about}
+      />
+      <div className="page-container">
+        <h1 className="page-title">Nos Mannequins</h1>
+        <p className="page-subtitle">
+          Découvrez les visages qui définissent l'avenir de la mode. Des talents uniques, prêts à donner vie à vos créations.
+        </p>
 
-      {/* Filters */}
-      <section className="py-6 border-b border-border sticky top-20 z-40 bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un mannequin..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-                {["all", "Femme", "Homme"].map((gender) => (
-                  <Button
-                    key={gender}
-                    variant={genderFilter === gender ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setGenderFilter(gender)}
-                    className="text-sm"
-                  >
-                    {gender === "all" ? "Tous" : gender === "Femme" ? "Femmes" : "Hommes"}
-                  </Button>
-                ))}
-              </div>
-              
-              <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-                {["all", "Pro", "Débutant"].map((level) => (
-                  <Button
-                    key={level}
-                    variant={levelFilter === level ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setLevelFilter(level)}
-                    className="text-sm"
-                  >
-                    {level === "all" ? "Niveaux" : level}
-                  </Button>
-                ))}
-              </div>
-            </div>
+        {/* Filters and Search */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 lg:mb-14">
+          <div className="flex items-center gap-4">
+            <FilterButton gender="Tous" />
+            <FilterButton gender="Femme" />
+            <FilterButton gender="Homme" />
+          </div>
+          <div className="w-full md:w-auto">
+            <label htmlFor="search-model" className="sr-only">Rechercher un mannequin</label>
+            <input
+              id="search-model"
+              type="text"
+              placeholder="Rechercher un mannequin..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-64 bg-black border border-pm-gold/50 rounded-full px-4 py-2 text-pm-off-white focus:outline-none focus:border-pm-gold focus:ring-2 focus:ring-pm-gold/50 transition-all"
+            />
           </div>
         </div>
-      </section>
 
-      {/* Models Grid */}
-      <section className="py-12 lg:py-20">
-        <div className="container mx-auto px-4 lg:px-8">
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : filteredModels.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredModels.map((model, index) => (
-                <motion.div
-                  key={model.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.03 }}
-                >
-                  <Link
-                    to={`/models/${model.id}`}
-                    className="group block relative overflow-hidden rounded-xl aspect-[3/4] bg-muted card-gold-hover"
-                  >
-                    {model.image_url ? (
-                      <img
-                        src={model.image_url}
-                        alt={model.name}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <User className="h-20 w-20 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
-                    
-                    {/* Content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                            {model.level || "Débutant"}
-                          </span>
-                          <span className="px-2 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-                            {model.gender}
-                          </span>
-                        </div>
-                        <h3 className="font-serif text-lg font-semibold text-foreground">
-                          {model.name}
-                        </h3>
-                        {model.height && (
-                          <p className="text-muted-foreground text-sm">{model.height}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="btn-primary px-5 py-2.5 text-sm shadow-lg">
-                        Voir le profil
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-serif text-xl font-semibold text-foreground mb-2">
-                Aucun mannequin trouvé
-              </h3>
-              <p className="text-muted-foreground">
-                Essayez de modifier vos critères de recherche
-              </p>
-            </div>
-          )}
+        {/* Models Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {filteredModels.map((model) => (
+            <ModelCard key={model.id} model={model} />
+          ))}
         </div>
-      </section>
-    </Layout>
+        {filteredModels.length === 0 && (
+          <div className="text-center col-span-full py-20">
+            <p className="text-pm-off-white/70">Aucun mannequin ne correspond à votre recherche.</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

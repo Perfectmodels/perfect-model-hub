@@ -1,69 +1,243 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import HomePage from "./pages/public/HomePage";
-import Models from "./pages/Models";
-import ModelDetail from "./pages/ModelDetail";
-import Casting from "./pages/Casting";
-import CastingApply from "./pages/CastingApply";
-import Services from "./pages/Services";
-import Magazine from "./pages/Magazine";
-import FashionDay from "./pages/FashionDay";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ModelDashboard from "./pages/ModelDashboard";
-import Dashboard from "./pages/admin/Dashboard";
-import CastingApplications from "./pages/admin/CastingApplications";
-import CastingLive from "./pages/admin/CastingLive";
-import ModelsManagement from "./pages/admin/ModelsManagement";
-import PaymentsManagement from "./pages/admin/PaymentsManagement";
-import AbsencesManagement from "./pages/admin/AbsencesManagement";
-import NotFound from "./pages/NotFound";
-import ModelForm from "./pages/admin/ModelForm";
-import CastingApplicationForm from "./pages/admin/CastingApplicationForm";
 
-const queryClient = new QueryClient();
+/** @jsxImportSource @emotion/react */
+import React, { useEffect, lazy, Suspense } from 'react';
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { DataProvider, useData } from './contexts/DataContext';
+import Layout from './components/icons/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+import AIAssistantIcon from './components/AIAssistantIcon';
+import { PWAInstaller } from './components/PWAInstaller';
+import { registerServiceWorker } from './utils/pwa';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/models" element={<Models />} />
-            <Route path="/models/:id" element={<ModelDetail />} />
-            <Route path="/casting" element={<Casting />} />
-            <Route path="/casting/apply" element={<CastingApply />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/magazine" element={<Magazine />} />
-            <Route path="/fashion-day" element={<FashionDay />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/model-dashboard" element={<ModelDashboard />} />
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/admin/casting" element={<CastingApplications />} />
-            <Route path="/admin/casting-applications/new" element={<CastingApplicationForm />} />
-            <Route path="/admin/casting-applications/edit/:id" element={<CastingApplicationForm />} />
-            <Route path="/admin/casting-live" element={<CastingLive />} />
-            <Route path="/admin/models" element={<ModelsManagement />} />
-            <Route path="/admin/models/new" element={<ModelForm />} />
-            <Route path="/admin/models/edit/:id" element={<ModelForm />} />
-            <Route path="/admin/payments" element={<PaymentsManagement />} />
-            <Route path="/admin/absences" element={<AbsencesManagement />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+// --- Lazy-loaded Pages ---
+
+// Core Pages
+const Home = lazy(() => import('./pages/Home'));
+const Agency = lazy(() => import('./pages/Agency'));
+const Models = lazy(() => import('./pages/Models'));
+const ModelDetail = lazy(() => import('./pages/ModelDetail'));
+const FashionDay = lazy(() => import('./pages/FashionDay'));
+const Magazine = lazy(() => import('./pages/Magazine'));
+const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Services = lazy(() => import('./pages/Services'));
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
+const Casting = lazy(() => import('./pages/Casting'));
+const CastingForm = lazy(() => import('./pages/CastingForm'));
+const FashionDayApplicationForm = lazy(() => import('./pages/FashionDayApplicationForm'));
+const Login = lazy(() => import('./pages/Login'));
+const Activity = lazy(() => import('./pages/Activity')); // Renamed Formations
+const ChapterDetail = lazy(() => import('./pages/ChapterDetail'));
+const ModelDashboard = lazy(() => import('./pages/ModelDashboard')); // Profil
+const ClassroomForum = lazy(() => import('./pages/ClassroomForum'));
+const ForumThread = lazy(() => import('./pages/ForumThread'));
+const Chat = lazy(() => import('./pages/Chat'));
+const ImageGeneration = lazy(() => import('./pages/ImageGeneration'));
+const ImageAnalysis = lazy(() => import('./pages/ImageAnalysis'));
+const LiveChat = lazy(() => import('./pages/LiveChat'));
+
+// Admin Pages
+const Admin = lazy(() => import('./pages/Admin'));
+const AdminAgency = lazy(() => import('./pages/AdminAgency'));
+const AdminCasting = lazy(() => import('./pages/AdminCasting'));
+const AdminCastingResults = lazy(() => import('./pages/AdminCastingResults'));
+const AdminClassroom = lazy(() => import('./pages/AdminClassroom'));
+const AdminClassroomProgress = lazy(() => import('./pages/AdminClassroomProgress'));
+const AdminFashionDay = lazy(() => import('./pages/AdminFashionDay'));
+const AdminFashionDayEvents = lazy(() => import('./pages/AdminFashionDayEvents'));
+const AdminMagazine = lazy(() => import('./pages/AdminMagazine'));
+const AdminModelAccess = lazy(() => import('./pages/AdminModelAccess'));
+const AdminModels = lazy(() => import('./pages/AdminModels'));
+const AdminNews = lazy(() => import('./pages/AdminNews'));
+const AdminRecovery = lazy(() => import('./pages/AdminRecovery'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
+const AdminComments = lazy(() => import('./pages/AdminComments'));
+const AdminBookings = lazy(() => import('./pages/AdminBookings'));
+const AdminMessages = lazy(() => import('./pages/AdminMessages'));
+const AdminPayments = lazy(() => import('./pages/AdminPayments'));
+const AdminAbsences = lazy(() => import('./pages/AdminAbsences'));
+const AdminArtisticDirection = lazy(() => import('./pages/AdminArtisticDirection'));
+const AdminMailing = lazy(() => import('./pages/AdminMailing'));
+
+// Role-specific pages
+const JuryCasting = lazy(() => import('./pages/JuryCasting'));
+const RegistrationCasting = lazy(() => import('./pages/RegistrationCasting'));
+
+// Static Pages
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+// --- Utility Components ---
+
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
+const LoadingFallback: React.FC = () => (
+    <div className="w-full h-screen flex items-center justify-center bg-pm-dark">
+        <p className="text-pm-gold text-2xl font-playfair animate-pulse">Chargement...</p>
+    </div>
 );
+
+// --- Page Transitions ---
+
+const pageVariants = {
+    initial: { opacity: 0 },
+    in: { opacity: 1 },
+    out: { opacity: 0 }
+};
+
+const pageTransition = {
+    type: "tween",
+    ease: "anticipate",
+    duration: 0.5
+};
+
+// --- Animated Routes ---
+
+const AnimatedRoutes: React.FC = () => {
+    const location = useLocation();
+    return (
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={location.pathname}
+                initial="initial"
+                animate="in"
+                exit="out"
+                variants={pageVariants}
+                transition={pageTransition}
+            >
+                <Routes location={location}>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/agence" element={<Agency />} />
+                    <Route path="/mannequins" element={<Models />} />
+                    <Route path="/mannequins/:id" element={<ModelDetail />} />
+                    <Route path="/fashion-day" element={<FashionDay />} />
+                    <Route path="/magazine" element={<Magazine />} />
+                    <Route path="/magazine/:slug" element={<ArticleDetail />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/services" element={<Services />} />
+                    <Route path="/services/:slug" element={<ServiceDetail />} />
+                    <Route path="/casting" element={<Casting />} />
+                    <Route path="/casting-formulaire" element={<CastingForm />} />
+                    <Route path="/fashion-day-application" element={<FashionDayApplicationForm />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-of-use" element={<TermsOfUse />} />
+                    <Route path="/chat" element={<Chat />} />
+
+                    {/* Protected Routes */}
+                    <Route path="/formations" element={<ProtectedRoute role="student"><Activity /></ProtectedRoute>} />
+                    <Route path="/formations/forum" element={<ProtectedRoute role="student"><ClassroomForum /></ProtectedRoute>} />
+                    <Route path="/formations/forum/:threadId" element={<ProtectedRoute role="student"><ForumThread /></ProtectedRoute>} />
+                    <Route path="/formations/:moduleSlug/:chapterSlug" element={<ProtectedRoute role="student"><ChapterDetail /></ProtectedRoute>} />
+                    <Route path="/profil" element={<ProtectedRoute role="student"><ModelDashboard /></ProtectedRoute>} />
+                    
+                    <Route path="/jury/casting" element={<ProtectedRoute role="jury"><JuryCasting /></ProtectedRoute>} />
+                    <Route path="/enregistrement/casting" element={<ProtectedRoute role="registration"><RegistrationCasting /></ProtectedRoute>} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<ProtectedRoute role="admin"><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/models" element={<ProtectedRoute role="admin"><AdminModels /></ProtectedRoute>} />
+                    <Route path="/admin/magazine" element={<ProtectedRoute role="admin"><AdminMagazine /></ProtectedRoute>} />
+                    <Route path="/admin/classroom" element={<ProtectedRoute role="admin"><AdminClassroom /></ProtectedRoute>} />
+                    <Route path="/admin/settings" element={<ProtectedRoute role="admin"><AdminSettings /></ProtectedRoute>} />
+                    <Route path="/admin/agency" element={<ProtectedRoute role="admin"><AdminAgency /></ProtectedRoute>} />
+                    <Route path="/admin/casting-applications" element={<ProtectedRoute role="admin"><AdminCasting /></ProtectedRoute>} />
+                    <Route path="/admin/casting-results" element={<ProtectedRoute role="admin"><AdminCastingResults /></ProtectedRoute>} />
+                    <Route path="/admin/fashion-day-applications" element={<ProtectedRoute role="admin"><AdminFashionDay /></ProtectedRoute>} />
+                    <Route path="/admin/fashion-day-events" element={<ProtectedRoute role="admin"><AdminFashionDayEvents /></ProtectedRoute>} />
+                    <Route path="/admin/news" element={<ProtectedRoute role="admin"><AdminNews /></ProtectedRoute>} />
+                    <Route path="/admin/classroom-progress" element={<ProtectedRoute role="admin"><AdminClassroomProgress /></ProtectedRoute>} />
+                    <Route path="/admin/model-access" element={<ProtectedRoute role="admin"><AdminModelAccess /></ProtectedRoute>} />
+                    <Route path="/admin/recovery-requests" element={<ProtectedRoute role="admin"><AdminRecovery /></ProtectedRoute>} />
+                    <Route path="/admin/comments" element={<ProtectedRoute role="admin"><AdminComments /></ProtectedRoute>} />
+                    <Route path="/admin/messages" element={<ProtectedRoute role="admin"><AdminMessages /></ProtectedRoute>} />
+                    <Route path="/admin/bookings" element={<ProtectedRoute role="admin"><AdminBookings /></ProtectedRoute>} />
+                    <Route path="/admin/payments" element={<ProtectedRoute role="admin"><AdminPayments /></ProtectedRoute>} />
+                    <Route path="/admin/absences" element={<ProtectedRoute role="admin"><AdminAbsences /></ProtectedRoute>} />
+                    <Route path="/admin/artistic-direction" element={<ProtectedRoute role="admin"><AdminArtisticDirection /></ProtectedRoute>} />
+                    <Route path="/admin/generer-image" element={<ProtectedRoute role="admin"><ImageGeneration /></ProtectedRoute>} />
+                    <Route path="/admin/analyser-image" element={<ProtectedRoute role="admin"><ImageAnalysis /></ProtectedRoute>} />
+                    <Route path="/admin/live-chat" element={<ProtectedRoute role="admin"><LiveChat /></ProtectedRoute>} />
+                    <Route path="/admin/mailing" element={<ProtectedRoute role="admin"><AdminMailing /></ProtectedRoute>} />
+
+                    {/* Not Found Route */}
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
+// --- App Content ---
+
+const AppContent: React.FC = () => {
+    const location = useLocation();
+    const { data } = useData();
+
+    // Browser tab title notification logic
+    useEffect(() => {
+        const originalTitle = "Perfect Models Management";
+        if (data && location.pathname.startsWith('/admin')) {
+            const newCastingApps = data.castingApplications?.filter(app => app.status === 'Nouveau').length || 0;
+            const newFashionDayApps = data.fashionDayApplications?.filter(app => app.status === 'Nouveau').length || 0;
+            const newRecoveryRequests = data.recoveryRequests?.filter(req => req.status === 'Nouveau').length || 0;
+            const newBookingRequests = data.bookingRequests?.filter(req => req.status === 'Nouveau').length || 0;
+            const newMessages = data.contactMessages?.filter(msg => msg.status === 'Nouveau').length || 0;
+
+            const totalNotifications = newCastingApps + newFashionDayApps + newRecoveryRequests + newBookingRequests + newMessages;
+
+            if (totalNotifications > 0) {
+                document.title = `(${totalNotifications}) Admin | ${originalTitle}`;
+            } else {
+                document.title = `Admin | ${originalTitle}`;
+            }
+        } else {
+            // Restore title if not on an admin page
+            if (document.title.startsWith('(') || document.title.startsWith('Admin |')) {
+                 document.title = originalTitle;
+            }
+        }
+        
+        return () => {
+            document.title = originalTitle;
+        };
+    }, [location.pathname, data]);
+
+    return (
+        <Layout>
+            <Suspense fallback={<LoadingFallback />}>
+                <AnimatedRoutes />
+            </Suspense>
+            <AIAssistantIcon />
+        </Layout>
+    );
+}
+
+// --- Main App Component ---
+
+const App: React.FC = () => {
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
+  return (
+    <DataProvider>
+      <HashRouter>
+        <ScrollToTop />
+        <AppContent />
+        <PWAInstaller />
+      </HashRouter>
+    </DataProvider>
+  );
+};
 
 export default App;

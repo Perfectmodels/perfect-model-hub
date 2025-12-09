@@ -1,175 +1,56 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap");
+/* Base Styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Perfect Models Management - Design System
-   Primary: pm-gold (#D4AF37)
-   Background: pm-dark (#0a0a0a)
-   All colors MUST be HSL.
-*/
-
 @layer base {
-  :root {
-    /* Light mode - rarely used, dark is default */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 4%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 4%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 4%;
-
-    --primary: 43 70% 52%; /* Gold #D4AF37 */
-    --primary-foreground: 0 0% 4%;
-
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 9%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 43 70% 52%;
-
-    --radius: 0.625rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 4%;
-    --sidebar-primary: 43 70% 52%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 43 70% 52%;
-
-    --chart-1: 43 70% 52%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 220 70% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-
-    --font-sans: Montserrat, ui-sans-serif, system-ui, sans-serif;
-    --font-serif: "Playfair Display", ui-serif, Georgia, serif;
-    --font-mono: "Roboto Mono", ui-monospace, monospace;
-  }
-
-  /* Dark Mode - Default theme for PM */
-  .dark {
-    --background: 0 0% 4%; /* #0a0a0a */
-    --foreground: 0 0% 95%; /* Off-white */
-
-    --card: 0 0% 7%; /* Slightly lighter than background */
-    --card-foreground: 0 0% 95%;
-
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 43 70% 52%; /* Gold #D4AF37 */
-    --primary-foreground: 0 0% 4%;
-
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
-
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 95%;
-
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 43 70% 52%;
-
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 43 70% 52%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 43 70% 52%;
-
-    --chart-1: 43 70% 52%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 220 70% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  html {
-    @apply dark;
-  }
-
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-pm-dark text-pm-off-white font-montserrat antialiased;
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+  @media print {
+    .print-hide { @apply hidden; }
+    .printable-content { @apply block; }
+    body { @apply bg-white; }
   }
 }
 
+/* Reusable Components */
 @layer components {
-  /* Gold button styling */
-  .btn-primary {
-    @apply bg-primary text-primary-foreground uppercase font-bold tracking-widest rounded-full 
-           transition-all duration-300 hover:scale-105;
-  }
+  .card-base { @apply bg-black border border-pm-gold/20 transition-all duration-300; }
+  .page-container { @apply max-w-7xl mx-auto px-6 pt-20 pb-20; }
+  .page-title { @apply font-playfair text-5xl text-pm-gold text-center mb-4; }
+  .page-subtitle { @apply text-center text-lg max-w-3xl mx-auto mb-12 text-pm-off-white/80; }
+  .section-title { @apply font-playfair text-4xl text-center text-pm-gold mb-8; }
+  .cta-btn-gold { @apply w-full sm:w-auto px-10 py-4 bg-pm-gold text-pm-dark font-bold uppercase tracking-widest text-sm rounded-full text-center transition-all duration-300 hover:bg-white hover:shadow-2xl hover:shadow-pm-gold/30; }
+  .cta-btn-outline { @apply w-full sm:w-auto px-10 py-4 border-2 border-pm-gold text-pm-gold font-bold uppercase tracking-widest text-sm rounded-full text-center transition-all duration-300 hover:bg-pm-gold hover:text-pm-dark; }
 
-  /* Outline button with gold border */
-  .btn-outline-gold {
-    @apply bg-transparent border-2 border-primary text-primary rounded-full
-           transition-all duration-300 hover:bg-primary hover:text-primary-foreground;
-  }
+  /* Admin Styles */
+  .admin-label { @apply block text-sm font-bold text-pm-off-white/70 mb-2; }
+  .admin-input, .admin-textarea, .admin-select { @apply w-full bg-pm-dark border border-pm-off-white/30 rounded-md py-2 px-3 text-pm-off-white transition-all duration-200; }
+  .admin-input:focus, .admin-textarea:focus, .admin-select:focus { @apply outline-none border-pm-gold ring-1 ring-pm-gold; }
+  .admin-textarea { @apply min-h-[120px]; }
+  .admin-page-header { @apply flex justify-between items-start mb-8 flex-wrap gap-4; }
+  .admin-page-title { @apply font-playfair text-4xl text-pm-gold; }
+  .admin-page-subtitle { @apply text-pm-off-white/70 mt-2; }
+  .admin-section-title { @apply font-playfair text-2xl text-pm-gold border-b-2 border-pm-gold/20 pb-2 mb-6; }
+  .admin-section-wrapper { @apply bg-black border border-pm-gold/20 p-6 rounded-lg shadow-lg shadow-black/30; }
+  .admin-table { @apply w-full text-left; }
+  .admin-table th { @apply p-4 uppercase text-xs tracking-wider text-pm-off-white/70; }
+  .admin-table td { @apply p-4 border-t border-pm-dark; }
+  .action-btn { @apply p-2 rounded-md transition-colors border border-transparent; }
 
-  /* Admin input styling */
-  .admin-input {
-    @apply bg-muted border border-border text-foreground rounded-lg
-           focus:border-primary focus:ring-1 focus:ring-primary transition-colors;
-  }
-
-  /* Gold accent border for cards on hover */
-  .card-gold-hover {
-    @apply border border-primary/20 transition-all duration-300
-           hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10;
-  }
+  /* Prose (Rich Text) Styles */
+  .prose { @apply text-pm-off-white/80 max-w-none; }
+  .prose h2, .prose h3 { @apply font-playfair text-pm-gold; }
+  .prose a { @apply text-pm-gold underline; }
 }
 
+/* Custom Utilities */
 @layer utilities {
-  /* Status badge colors */
-  .status-success {
-    @apply bg-emerald-500/20 text-emerald-400;
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
   }
-  .status-info {
-    @apply bg-blue-500/20 text-blue-400;
-  }
-  .status-warning {
-    @apply bg-amber-500/20 text-amber-400;
-  }
-  .status-error {
-    @apply bg-red-500/20 text-red-400;
-  }
-  .status-neutral {
-    @apply bg-muted text-muted-foreground;
+  .focus-style-self {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-pm-gold focus-visible:ring-offset-pm-dark;
   }
 }
