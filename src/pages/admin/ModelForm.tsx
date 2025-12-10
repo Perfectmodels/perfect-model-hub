@@ -26,7 +26,14 @@ const ModelForm = () => {
         const docRef = doc(db, 'models', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setFormData(docSnap.data());
+          const data = docSnap.data();
+          setFormData({
+            first_name: data.first_name || '',
+            last_name: data.last_name || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            status: data.status || 'draft',
+          });
         }
       };
       fetchModel();

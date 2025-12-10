@@ -159,10 +159,11 @@ const CastingLive = () => {
   const currentScores = currentCandidate ? allScores[currentCandidate.id] || [] : [];
   const averageScore = currentScores.length > 0 ? currentScores.reduce((acc, s) => acc + s.overall, 0) / currentScores.length : 0;
 
+  const allScoresArray = Object.values(allScores).flat();
   const stats = {
       total: candidates.length,
       evaluated: candidates.filter(c => allScores[c.id] && allScores[c.id].length > 0).length,
-      averageScore: allScores.length > 0 ? (Object.values(allScores).flat().reduce((acc, s) => acc + s.overall, 0) / Object.values(allScores).flat().length) : 0
+      averageScore: allScoresArray.length > 0 ? (allScoresArray.reduce((acc, s) => acc + s.overall, 0) / allScoresArray.length) : 0
   }
 
   return (
