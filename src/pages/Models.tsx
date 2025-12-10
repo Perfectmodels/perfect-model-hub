@@ -1,48 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Filter, User, Loader2 } from "lucide-react";
+import { Search, Filter, User, Loader2, AlertCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { db } from "@/integrations/firebase/client";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
-
-interface Model {
-  id: string;
-  name: string;
-  gender: string;
-  height: string | null;
-  level: string | null;
-  image_url: string | null;
-  categories: string[] | null;
-  is_public: boolean | null;
-}
+import { useFirebaseModels } from "@/hooks/useFirebaseModels";
 
 const Models = () => {
-  const [models, setModels] = useState<Model[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { models, loading, error } = useFirebaseModels();
   const [searchQuery, setSearchQuery] = useState("");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [levelFilter, setLevelFilter] = useState<string>("all");
-
-  useEffect(() => {
-    const fetchModels = async () => {
-      try {
-        const modelsCollection = collection(db, "models");
-        const q = query(modelsCollection, where("is_public", "==", true), orderBy("name"));
-        const querySnapshot = await getDocs(q);
-        const modelsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Model));
-        setModels(modelsData);
-      } catch (error) {
-        console.error("Error fetching models:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchModels();
-  }, []);
 
   const filteredModels = models.filter((model) => {
     const matchesSearch = model.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -125,6 +94,11 @@ const Models = () => {
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20 text-destructive">
+              <AlertCircle className="h-12 w-12 mb-4" />
+              <p>{error}</p>
             </div>
           ) : filteredModels.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
