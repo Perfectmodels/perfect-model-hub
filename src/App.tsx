@@ -25,6 +25,8 @@ import AbsencesManagement from "./pages/admin/AbsencesManagement";
 import NotFound from "./pages/NotFound";
 import ModelForm from "./pages/admin/ModelForm";
 import CastingApplicationForm from "./pages/admin/CastingApplicationForm";
+import CastingAdmin from "./pages/admin/Casting";
+import ImportData from "./pages/admin/ImportData";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,8 @@ const App = () => (
             <Route path="/admin/models/edit/:id" element={<ModelForm />} />
             <Route path="/admin/payments" element={<PaymentsManagement />} />
             <Route path="/admin/absences" element={<AbsencesManagement />} />
+            <Route path="/admin/casting-board" element={<CastingAdmin />} />
+            <Route path="/admin/import-data" element={<ImportData />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

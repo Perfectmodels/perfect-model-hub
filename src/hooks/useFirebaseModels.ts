@@ -18,6 +18,7 @@ export interface FirebaseModel {
   hips?: string | null;
   shoe_size?: string | null;
   age?: number | null;
+  username?: string | null;
 }
 
 export const useFirebaseModels = () => {
@@ -36,20 +37,22 @@ export const useFirebaseModels = () => {
             const modelData = value as Record<string, any>;
             return {
               id: key,
-              name: modelData.name || 'Sans nom',
-              gender: modelData.gender || 'Non spécifié',
-              level: modelData.level,
-              height: modelData.height,
+              // Support both old format (nom/niveau/genre) and new format (name/level/gender)
+              name: modelData.name || modelData.nom || 'Sans nom',
+              gender: modelData.gender || modelData.genre || 'Non spécifié',
+              level: modelData.level || modelData.niveau,
+              height: modelData.height || modelData.taille?.toString(),
               image_url: modelData.image_url,
-              is_public: modelData.is_public,
+              is_public: modelData.is_public ?? modelData.public ?? true,
               categories: modelData.categories,
               experience: modelData.experience,
-              location: modelData.location,
+              location: modelData.location || 'Libreville',
               chest: modelData.chest,
               waist: modelData.waist,
               hips: modelData.hips,
               shoe_size: modelData.shoe_size,
               age: modelData.age,
+              username: modelData.username,
             };
           });
           // Filter only public models
