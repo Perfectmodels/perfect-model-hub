@@ -39,14 +39,24 @@ const CastingApplicationForm = () => {
           const docRef = doc(db, 'casting_applications', id);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            const data = docSnap.data();
+          const data = docSnap.data();
             // Ensure all fields are strings for the form
-            Object.keys(data).forEach(key => {
-              if (data[key] === null || data[key] === undefined) {
-                data[key] = '';
-              }
-            });
-            setFormData(data);
+            const formattedData = {
+              first_name: data.first_name || '',
+              last_name: data.last_name || '',
+              email: data.email || '',
+              phone: data.phone || '',
+              birth_date: data.birth_date || '',
+              gender: data.gender || '',
+              city: data.city || '',
+              nationality: data.nationality || '',
+              height: data.height?.toString() || '',
+              weight: data.weight?.toString() || '',
+              experience: data.experience || '',
+              instagram: data.instagram || '',
+              status: data.status || 'Nouveau',
+            };
+            setFormData(formattedData);
           }
         } catch (error) {
           toast({ title: 'Erreur', description: 'Impossible de charger les données de la candidature.', variant: 'destructive' });

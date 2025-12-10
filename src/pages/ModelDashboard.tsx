@@ -61,7 +61,8 @@ const ModelDashboard = () => {
 
       try {
         // Fetch model profile linked to this user
-        const q = query(collection(db, "models"), where("user_id", "==", user.id));
+        const userId = (user as any).uid;
+        const q = query(collection(db, "models"), where("user_id", "==", userId));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
