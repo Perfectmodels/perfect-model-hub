@@ -1,219 +1,174 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, Clock } from "lucide-react";
-import { Layout } from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState, useEffect } from 'react';
+// FIX: Corrected react-router-dom import statement to resolve module resolution errors.
+import { useLocation } from 'react-router-dom';
+import { MapPinIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import SEO from '../components/SEO';
+import { useData } from '../contexts/DataContext';
+import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../components/icons/SocialIcons';
+import BookingForm from '../components/BookingForm';
+import { ContactMessage } from '../types';
 
-const contactInfo = [
-  { icon: MapPin, label: "Adresse", value: "Libreville, Gabon" },
-  { icon: Phone, label: "Téléphone", value: "+241 74 06 64 61", href: "tel:+24174066461" },
-  { icon: Mail, label: "Email", value: "contact@perfectmodels.ga", href: "mailto:contact@perfectmodels.ga" },
-  { icon: Clock, label: "Horaires", value: "Lun - Ven : 9h - 18h" },
-];
-
-const Contact = () => {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+const Contact: React.FC = () => {
+    const { data, saveData } = useData();
+    const location = useLocation();
+    const contactInfo = data?.contactInfo;
+    const socialLinks = data?.socialLinks;
     
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [statusMessage, setStatusMessage] = useState('');
     
-    toast({
-      title: "Message envoyé !",
-      description: "Nous vous répondrons dans les plus brefs délais.",
-    });
-    
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    setIsSubmitting(false);
-  };
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const service = params.get('service');
+        if (service) {
+            setFormData(prev => ({ ...prev, subject: `Demande de devis pour : ${service}` }));
+        }
+    }, [location.search]);
 
-  return (
-    <Layout>
-      {/* Hero */}
-      <section className="py-12 lg:py-20 bg-card border-b border-border">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Contact
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Une question, un projet, une collaboration ? Nous sommes à votre écoute.
-            </p>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* Contact Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-12 lg:gap-20">
-            {/* Contact Info */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="lg:col-span-2"
-            >
-              <h2 className="font-serif text-2xl font-bold text-foreground mb-8">
-                Nos coordonnées
-              </h2>
-              
-              <div className="space-y-6">
-                {contactInfo.map((item) => (
-                  <div key={item.label} className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center text-foreground shrink-0">
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">{item.label}</p>
-                      {item.href ? (
-                        <a
-                          href={item.href}
-                          className="text-foreground font-medium hover:text-primary transition-colors"
-                        >
-                          {item.value}
-                        </a>
-                      ) : (
-                        <p className="text-foreground font-medium">{item.value}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus('loading');
+        setStatusMessage('');
 
-              {/* Social Links */}
-              <div className="mt-12">
-                <h3 className="font-semibold text-foreground mb-4">Suivez-nous</h3>
-                <div className="flex gap-4">
-                  <a
-                    href="https://instagram.com/perfectmodelsmanagement"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
-                  >
-                    Instagram
-                  </a>
-                  <a
-                    href="https://facebook.com/perfectmodelsmanagement"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
-                  >
-                    Facebook
-                  </a>
+        if (!data) {
+            setStatus('error');
+            setStatusMessage('Erreur: Impossible de charger les données de l\'application.');
+            return;
+        }
+
+        const newContactMessage: ContactMessage = {
+            id: `contact-${Date.now()}`,
+            submissionDate: new Date().toISOString(),
+            status: 'Nouveau',
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+        };
+
+        try {
+            const updatedMessages = [...(data.contactMessages || []), newContactMessage];
+            await saveData({ ...data, contactMessages: updatedMessages });
+            
+            setStatus('success');
+            setStatusMessage('Message envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.');
+            setFormData({ name: '', email: '', subject: '', message: '' });
+        } catch (error) {
+            setStatus('error');
+            setStatusMessage('Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.');
+            console.error("Error saving contact message:", error);
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    return (
+        <div className="bg-pm-dark text-pm-off-white py-16 lg:py-24 min-h-screen">
+            <SEO 
+                title="Contact | Perfect Models Management"
+                description="Contactez-nous pour toute demande de booking, de partenariat ou d'information. L'équipe de Perfect Models Management est à votre disposition à Libreville, Gabon."
+                keywords="contacter agence mannequin, booking mannequin gabon, partenariat mode, pmm contact"
+                image={data?.siteImages.about}
+            />
+            <div className="container mx-auto px-6">
+                <div className="text-center">
+                    <h1 className="text-4xl sm:text-5xl font-playfair text-pm-gold mb-4">Contactez-nous</h1>
+                    <p className="max-w-2xl mx-auto text-pm-off-white/80">
+                        Une question, un projet de collaboration ou une demande de booking ? Notre équipe est à votre écoute.
+                    </p>
                 </div>
-              </div>
-            </motion.div>
 
-            {/* Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="lg:col-span-3"
-            >
-              <div className="bg-card border border-border rounded-2xl p-8">
-                <h2 className="font-serif text-2xl font-bold text-foreground mb-8">
-                  Envoyez-nous un message
-                </h2>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nom complet *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => handleChange("name", e.target.value)}
-                        required
-                      />
+                <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+                    {/* Contact Info */}
+                    <div className="bg-black p-8 border border-pm-gold/20 rounded-lg shadow-lg">
+                        <h2 className="text-3xl font-playfair text-pm-gold mb-6">Nos Coordonnées</h2>
+                        {contactInfo && (
+                            <div className="space-y-4 text-lg">
+                                <InfoItem icon={MapPinIcon} text={contactInfo.address} />
+                                <InfoItem icon={PhoneIcon} text={contactInfo.phone} />
+                                <InfoItem icon={EnvelopeIcon} text={contactInfo.email} href={`mailto:${contactInfo.email}`} />
+                            </div>
+                        )}
+                        <div className="mt-8 pt-6 border-t border-pm-gold/10">
+                            <h3 className="text-xl font-bold text-pm-off-white mb-4">Suivez-nous</h3>
+                            {socialLinks && (
+                                <div className="flex space-x-6">
+                                    {socialLinks.facebook && <SocialLink href={socialLinks.facebook} icon={FacebookIcon} />}
+                                    {socialLinks.instagram && <SocialLink href={socialLinks.instagram} icon={InstagramIcon} />}
+                                    {socialLinks.youtube && <SocialLink href={socialLinks.youtube} icon={YoutubeIcon} />}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleChange("email", e.target.value)}
-                        required
-                      />
+
+                    {/* Contact Form */}
+                    <div className="bg-black p-8 border border-pm-gold/20 rounded-lg shadow-lg">
+                        <h2 className="text-3xl font-playfair text-pm-gold mb-6">Envoyez-nous un message</h2>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <FormInput label="Votre Nom" name="name" value={formData.name} onChange={handleChange} required />
+                            <FormInput label="Votre Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                            <FormInput label="Sujet" name="subject" value={formData.subject} onChange={handleChange} required />
+                            <FormTextArea label="Votre Message" name="message" value={formData.message} onChange={handleChange} required />
+                            
+                            <div>
+                                <button type="submit" disabled={status === 'loading'} className="w-full px-8 py-3 bg-pm-gold text-pm-dark font-bold uppercase tracking-widest rounded-full transition-all hover:bg-white disabled:opacity-50">
+                                    {status === 'loading' ? 'Envoi en cours...' : 'Envoyer'}
+                                </button>
+                            </div>
+                            
+                            {statusMessage && (
+                                <p className={`text-center text-sm p-3 rounded-md ${status === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                                    {statusMessage}
+                                </p>
+                            )}
+                        </form>
                     </div>
-                  </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Sujet *</Label>
-                    <Select
-                      value={formData.subject}
-                      onValueChange={(value) => handleChange("subject", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un sujet" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="booking">Réservation mannequin</SelectItem>
-                        <SelectItem value="casting">Question sur le casting</SelectItem>
-                        <SelectItem value="collaboration">Proposition de collaboration</SelectItem>
-                        <SelectItem value="event">Organisation d'événement</SelectItem>
-                        <SelectItem value="other">Autre demande</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="mt-16 max-w-6xl mx-auto">
+                    <div className="bg-black p-8 border border-pm-gold/20 rounded-lg shadow-lg">
+                        <h2 className="text-3xl font-playfair text-pm-gold mb-6 text-center">Demande de Booking</h2>
+                        <p className="text-center text-pm-off-white/80 mb-8 -mt-4">
+                            Pour un ou plusieurs mannequins, ou pour tout autre projet.
+                        </p>
+                        <BookingForm />
+                    </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
-                    <Textarea
-                      id="message"
-                      rows={5}
-                      value={formData.message}
-                      onChange={(e) => handleChange("message", e.target.value)}
-                      placeholder="Décrivez votre demande..."
-                      required
-                    />
-                  </div>
-
-                  <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      "Envoi en cours..."
-                    ) : (
-                      <>
-                        Envoyer le message
-                        <Send className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </div>
-            </motion.div>
-          </div>
+            </div>
         </div>
-      </section>
-    </Layout>
-  );
+    );
 };
+
+const InfoItem: React.FC<{icon: React.ElementType, text: string, href?: string}> = ({ icon: Icon, text, href }) => (
+    <div className="flex items-start gap-4">
+        <Icon className="w-6 h-6 text-pm-gold mt-1 flex-shrink-0" />
+        {href ? <a href={href} className="hover:text-pm-gold transition-colors">{text}</a> : <span>{text}</span>}
+    </div>
+);
+
+const SocialLink: React.FC<{ href: string, icon: React.ElementType }> = ({ href, icon: Icon }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold transition-colors">
+        <Icon className="w-8 h-8" />
+    </a>
+);
+
+const FormInput: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean}> = (props) => (
+    <div>
+        <label htmlFor={props.name} className="admin-label">{props.label}</label>
+        <input {...props} id={props.name} className="admin-input" />
+    </div>
+);
+
+const FormTextArea: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void, required?: boolean}> = (props) => (
+    <div>
+        <label htmlFor={props.name} className="admin-label">{props.label}</label>
+        <textarea {...props} id={props.name} rows={5} className="admin-input admin-textarea" />
+    </div>
+);
 
 export default Contact;

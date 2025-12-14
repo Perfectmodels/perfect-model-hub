@@ -1,148 +1,151 @@
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, Clock, ArrowRight } from "lucide-react";
-import { Layout } from "@/components/layout/Layout";
-import { Badge } from "@/components/ui/badge";
-import { magazineArticles } from "@/lib/data";
+import React, { useState } from 'react';
+// FIX: Corrected react-router-dom import statement to resolve module resolution errors.
+import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
+import { Article } from '../types';
+import { useData } from '../contexts/DataContext';
 
-const Magazine = () => {
-  const featuredArticle = magazineArticles[0];
-  const otherArticles = magazineArticles.slice(1);
+const Pagination: React.FC<{ currentPage: number, totalPages: number, onPageChange: (page: number) => void }> = ({ currentPage, totalPages, onPageChange }) => {
+    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+    return (
+        <nav aria-label="Pagination" className="flex justify-center items-center gap-4 mt-12 text-pm-off-white">
+            <button
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-black border border-pm-gold/50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-pm-gold hover:text-pm-dark transition-colors"
+            >
+                Précédent
+            </button>
+            <div className="flex items-center gap-2">
+                {pageNumbers.map(number => (
+                    <button
+                        key={number}
+                        onClick={() => onPageChange(number)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-md border transition-colors ${
+                            currentPage === number 
+                                ? 'bg-pm-gold text-pm-dark border-pm-gold' 
+                                : 'bg-black border-pm-gold/50 hover:bg-pm-gold/20'
+                        }`}
+                        aria-current={currentPage === number ? 'page' : undefined}
+                    >
+                        {number}
+                    </button>
+                ))}
+            </div>
+            <button
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-black border border-pm-gold/50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-pm-gold hover:text-pm-dark transition-colors"
+            >
+                Suivant
+            </button>
+        </nav>
+    );
+};
+
+
+const Magazine: React.FC = () => {
+  const { data, isInitialized } = useData();
+  const [currentPage, setCurrentPage] = useState(1);
+  const ARTICLES_PER_PAGE = 9;
+
+  const articles = data?.articles || [];
+
+  let featuredArticle = articles.find(a => a.isFeatured);
+  if (!featuredArticle && articles.length > 0) {
+    featuredArticle = articles[0]; // Fallback to the first article if none is featured
+  }
+  
+  const otherArticles = articles.filter(a => a.slug !== featuredArticle?.slug);
+
+  const totalPages = Math.ceil(otherArticles.length / ARTICLES_PER_PAGE);
+  const startIndex = (currentPage - 1) * ARTICLES_PER_PAGE;
+  const currentArticles = otherArticles.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    }
+  };
+
+
+  if (!isInitialized) {
+      return <div className="min-h-screen flex items-center justify-center text-pm-gold">Chargement du magazine...</div>;
+  }
 
   return (
-    <Layout>
-      {/* Hero */}
-      <section className="py-12 lg:py-20 bg-card border-b border-border">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-              Magazine
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Actualités, interviews et tendances du monde de la mode gabonaise
-            </p>
-          </motion.div>
+    <div className="bg-pm-dark text-pm-off-white">
+      <SEO 
+        title="Magazine | Focus Model 241"
+        description="Focus Model 241, le magazine en ligne de Perfect Models Management. Plongez dans les coulisses de la mode gabonaise avec des interviews exclusives, des analyses de tendances et des conseils de pro."
+        keywords="magazine mode gabon, focus model 241, interview mannequin, tendances mode afrique, mode libreville"
+        image={featuredArticle?.imageUrl}
+      />
+      <header className="bg-black py-8 border-b-2 border-pm-gold">
+        <div className="container mx-auto px-6 text-center">
+          <h1 className="text-4xl sm:text-5xl font-playfair text-pm-gold tracking-widest">FOCUS MODEL 241</h1>
+          <p className="text-pm-off-white/80 mt-2">Le magazine de la mode et des talents gabonais.</p>
         </div>
-      </section>
+      </header>
 
-      {/* Featured Article */}
-      <section className="py-12 lg:py-16">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Link
-              to={`/magazine/${featuredArticle.slug}`}
-              className="group grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
-            >
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted">
-                <img
-                  src={featuredArticle.imageUrl}
-                  alt={featuredArticle.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute top-4 left-4">
-                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                    À la une
-                  </Badge>
-                </div>
+      <div className="page-container">
+        {/* Featured Article */}
+        {featuredArticle && (
+          <section className="mb-12 md:mb-16">
+            <Link to={`/magazine/${featuredArticle.slug}`} className="group block md:grid md:grid-cols-2 gap-8 items-center content-section">
+              <div className="overflow-hidden">
+                <img src={featuredArticle.imageUrl} alt={featuredArticle.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
               <div>
-                <Badge variant="outline" className="mb-4">
-                  {featuredArticle.category}
-                </Badge>
-                <h2 className="font-serif text-3xl lg:text-4xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {featuredArticle.title}
-                </h2>
-                <p className="text-muted-foreground leading-relaxed mb-6">
-                  {featuredArticle.excerpt}
-                </p>
-                <div className="flex items-center gap-6 text-sm text-muted-foreground mb-6">
-                  <span>{featuredArticle.author}</span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {featuredArticle.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="h-4 w-4" />
-                    {featuredArticle.viewCount} vues
-                  </span>
-                </div>
-                <span className="inline-flex items-center text-foreground font-medium group-hover:text-primary transition-colors">
-                  Lire l'article
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <p className="text-sm uppercase tracking-widest text-pm-gold font-bold">{featuredArticle.category}</p>
+                <h2 className="text-4xl font-playfair my-3 text-pm-off-white transition-colors group-hover:text-pm-gold">{featuredArticle.title}</h2>
+                <p className="text-pm-off-white/70 mb-4">{featuredArticle.excerpt}</p>
+                <span className="font-bold text-pm-gold">
+                    Lire la suite <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </span>
               </div>
             </Link>
-          </motion.div>
-        </div>
-      </section>
+          </section>
+        )}
 
-      {/* Other Articles */}
-      <section className="py-12 lg:py-16 bg-card border-y border-border">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="font-serif text-2xl font-bold text-foreground mb-8"
-          >
-            Derniers articles
-          </motion.h2>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {otherArticles.map((article, index) => (
-              <motion.div
-                key={article.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Link
-                  to={`/magazine/${article.slug}`}
-                  className="group block"
-                >
-                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted mb-4">
-                    <img
-                      src={article.imageUrl}
-                      alt={article.title}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  </div>
-                  <Badge variant="outline" className="mb-3">
-                    {article.category}
-                  </Badge>
-                  <h3 className="font-serif text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
-                    {article.excerpt}
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{article.author}</span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {article.viewCount}
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
+        {/* Other Articles Grid */}
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {currentArticles.map(article => (
+              <ArticleCard key={article.slug} article={article} />
             ))}
           </div>
-        </div>
-      </section>
-    </Layout>
+          {totalPages > 1 && (
+             <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
+          )}
+        </section>
+      </div>
+    </div>
   );
 };
+
+const ArticleCard: React.FC<{ article: Article }> = ({ article }) => (
+  <Link to={`/magazine/${article.slug}`} className="group card-base overflow-hidden relative">
+    <div className="relative h-96 overflow-hidden">
+      <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent"></div>
+    </div>
+    <div className="absolute bottom-0 left-0 p-6 w-full">
+      <p className="text-sm uppercase tracking-widest text-pm-gold font-bold">{article.category}</p>
+      <h3 className="text-2xl font-playfair text-pm-off-white mt-2 group-hover:text-pm-gold transition-colors">{article.title}</h3>
+      <div className="overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500 ease-in-out">
+        <p className="text-sm text-pm-off-white/70 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200">
+          {article.excerpt}
+        </p>
+      </div>
+    </div>
+  </Link>
+);
 
 export default Magazine;

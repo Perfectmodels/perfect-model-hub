@@ -1,465 +1,244 @@
-import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { 
-  User, Camera, Calendar, GraduationCap, CreditCard, 
-  CalendarX, MessageSquare, Bell, ArrowUpRight, Upload,
-  CheckCircle, Clock, Image
-} from "lucide-react";
-import { Layout } from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/integrations/firebase/client";
-import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from "firebase/firestore";
-import { Loader2 } from "lucide-react";
 
-interface ModelProfile {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  gender: string;
-  height: string | null;
-  level: string | null;
-  image_url: string | null;
-  categories: string[] | null;
-  chest: string | null;
-  waist: string | null;
-  hips: string | null;
-  shoe_size: string | null;
-}
+import React, { useState, useEffect } from 'react';
+import { useData } from '../contexts/DataContext';
+import SEO from '../components/SEO';
+import { Link, useNavigate } from 'react-router-dom';
+import { BookOpenIcon, PresentationChartLineIcon, UserIcon, ArrowRightOnRectangleIcon, EnvelopeIcon, CheckCircleIcon, CalendarDaysIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { Model, PhotoshootBrief } from '../types';
+import ModelForm from '../components/ModelForm';
 
-interface Payment {
-  id: string;
-  month: string;
-  amount: number;
-  status: string | null;
-  payment_date: string | null;
-}
+type ActiveTab = 'profile' | 'results' | 'briefs';
 
-interface Absence {
-  id: string;
-  date: string;
-  reason: string | null;
-  is_excused: boolean | null;
-}
+const ModelDashboard: React.FC = () => {
+    const { data, saveData } = useData();
+    const navigate = useNavigate();
+    const userId = sessionStorage.getItem('userId');
+    const [editableModel, setEditableModel] = useState<Model | null>(null);
+    const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
+    const [expandedBriefId, setExpandedBriefId] = useState<string | null>(null);
 
-const ModelDashboard = () => {
-  const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<ModelProfile | null>(null);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [absences, setAbsences] = useState<Absence[]>([]);
-  const [loading, setLoading] = useState(true);
+    const originalModel = data?.models.find(m => m.id === userId);
+    const courseModulesWithQuizzes = data?.courseData?.filter(m => m.quiz && m.quiz.length > 0) || [];
 
-  useEffect(() => {
-    const fetchModelData = async () => {
-      if (!user) return;
+    const myBriefs = data?.photoshootBriefs.filter(b => b.modelId === userId).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) || [];
+    const newBriefsCount = myBriefs.filter(b => b.status === 'Nouveau').length;
 
-      try {
-        // Fetch model profile linked to this user
-        const userId = (user as any).uid;
-        const q = query(collection(db, "models"), where("user_id", "==", userId));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          const modelDoc = querySnapshot.docs[0];
-          const modelData = { id: modelDoc.id, ...modelDoc.data() } as ModelProfile;
-          setProfile(modelData);
-
-          // Fetch payments
-          const paymentsQuery = query(
-            collection(db, "payments"), 
-            where("model_id", "==", modelData.id), 
-            orderBy("month", "desc"), 
-            limit(6)
-          );
-          const paymentsSnapshot = await getDocs(paymentsQuery);
-          const paymentsData = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Payment));
-          setPayments(paymentsData || []);
-
-          // Fetch absences
-          const absencesQuery = query(
-            collection(db, "absences"), 
-            where("model_id", "==", modelData.id), 
-            orderBy("date", "desc"), 
-            limit(5)
-          );
-          const absencesSnapshot = await getDocs(absencesQuery);
-          const absencesData = absencesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Absence));
-          setAbsences(absencesData || []);
+    useEffect(() => {
+        if (originalModel) {
+            setEditableModel(JSON.parse(JSON.stringify(originalModel)));
         }
-      } catch (error) {
-        console.error("Error fetching model data:", error);
-      } finally {
-        setLoading(false);
-      }
+    }, [originalModel]);
+    
+    const handleSave = async (updatedModel: Model) => {
+        if (!data || !editableModel) return;
+        
+        const updatedModels = data.models.map(m => 
+            m.id === updatedModel.id ? updatedModel : m
+        );
+        
+        await saveData({ ...data, models: updatedModels });
+        alert("Profil mis à jour avec succès.");
+    };
+    
+    const handleCancel = () => {
+        if (originalModel) {
+            setEditableModel(JSON.parse(JSON.stringify(originalModel)));
+            alert("Les modifications ont été annulées.");
+        }
     };
 
-    if (!authLoading) {
-      fetchModelData();
+    const handleLogout = () => {
+        sessionStorage.clear();
+        navigate('/login');
+    };
+
+    const handleMarkAsRead = async (briefId: string) => {
+        if (!data) return;
+        const updatedBriefs = data.photoshootBriefs.map(b => 
+            b.id === briefId ? { ...b, status: 'Lu' as const } : b
+        );
+        await saveData({ ...data, photoshootBriefs: updatedBriefs });
+    };
+
+    const handleToggleBrief = async (briefId: string) => {
+        const newExpandedId = expandedBriefId === briefId ? null : briefId;
+        setExpandedBriefId(newExpandedId);
+
+        if (newExpandedId) {
+            const brief = myBriefs.find(b => b.id === briefId);
+            if (brief && brief.status === 'Nouveau') {
+                await handleMarkAsRead(briefId);
+            }
+        }
+    };
+
+    if (!editableModel) {
+        return (
+            <div className="bg-pm-dark text-pm-off-white min-h-screen flex items-center justify-center">
+                <p>Chargement du profil...</p>
+            </div>
+        );
     }
-  }, [user, authLoading]);
+    
+    const getScoreColor = (scorePercentage: number) => {
+        if (scorePercentage >= 80) return 'text-green-400';
+        if (scorePercentage >= 50) return 'text-yellow-400';
+        return 'text-red-400';
+    };
 
-  if (authLoading || loading) {
     return (
-      <Layout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="bg-pm-dark text-pm-off-white py-20 min-h-screen">
+            <SEO title={`Profil de ${editableModel.name}`} noIndex />
+            <div className="container mx-auto px-6 max-w-7xl">
+                <header className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
+                    <div>
+                        <h1 className="text-4xl font-playfair text-pm-gold">Bienvenue, {editableModel.name.split(' ')[0]}</h1>
+                        <p className="text-pm-off-white/80">Votre espace personnel pour gérer votre profil et suivre votre progression.</p>
+                    </div>
+                     <button onClick={handleLogout} className="inline-flex items-center gap-2 text-sm text-pm-gold/80 hover:text-pm-gold">
+                        <ArrowRightOnRectangleIcon className="w-5 h-5" /> Déconnexion
+                     </button>
+                </header>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <aside className="lg:col-span-1 space-y-4">
+                         <Link to="/formations" className="group block bg-black p-6 border border-pm-gold/20 hover:border-pm-gold transition-all duration-300 rounded-lg">
+                             <BookOpenIcon className="w-8 h-8 text-pm-gold mb-3" />
+                            <h2 className="text-xl font-playfair text-pm-gold mb-1">Accéder au Classroom</h2>
+                            <p className="text-sm text-pm-off-white/70">Continuez votre formation.</p>
+                        </Link>
+                        <Link to={`/mannequins/${editableModel.id}`} className="group block bg-black p-6 border border-pm-gold/20 hover:border-pm-gold transition-all duration-300 rounded-lg">
+                             <UserIcon className="w-8 h-8 text-pm-gold mb-3" />
+                            <h2 className="text-xl font-playfair text-pm-gold mb-1">Voir mon Portfolio Public</h2>
+                            <p className="text-sm text-pm-off-white/70">Consultez votre profil public.</p>
+                        </Link>
+                    </aside>
+                    
+                    <main className="lg:col-span-3">
+                        <div className="border-b border-pm-gold/20 mb-6">
+                            <nav className="flex space-x-4" aria-label="Tabs">
+                                <TabButton name="Mon Profil" icon={UserIcon} isActive={activeTab === 'profile'} onClick={() => setActiveTab('profile')} />
+                                <TabButton name="Mes Résultats" icon={PresentationChartLineIcon} isActive={activeTab === 'results'} onClick={() => setActiveTab('results')} />
+                                <TabButton name="Briefings" icon={EnvelopeIcon} isActive={activeTab === 'briefs'} onClick={() => setActiveTab('briefs')} notificationCount={newBriefsCount} />
+                            </nav>
+                        </div>
+                        
+                        <div>
+                            {activeTab === 'profile' && (
+                                <ModelForm 
+                                    model={editableModel}
+                                    onSave={handleSave}
+                                    onCancel={handleCancel}
+                                    mode="model"
+                                    isCreating={false}
+                                />
+                            )}
+                            {activeTab === 'results' && (
+                                <div className="bg-black p-8 border border-pm-gold/20 rounded-lg shadow-lg shadow-black/30">
+                                    <h2 className="text-2xl font-playfair text-pm-gold mb-6">Résultats des Quiz</h2>
+                                    {courseModulesWithQuizzes && courseModulesWithQuizzes.length > 0 ? (
+                                        <ul className="space-y-3">
+                                            {courseModulesWithQuizzes.map(module => {
+                                                const scoreData = editableModel.quizScores?.[module.slug];
+                                                // FIX: Calculate percentage from the score object.
+                                                const percentage = scoreData ? Math.round((scoreData.score / scoreData.total) * 100) : null;
+                                                return (
+                                                    <li key={module.slug} className="flex justify-between items-center bg-pm-dark p-3 rounded-md text-sm">
+                                                        <span className="text-pm-off-white/80">{module.title}</span>
+                                                        {percentage !== null ? (
+                                                            // FIX: Use the calculated percentage for display and color coding.
+                                                            <span className={`font-bold text-lg ${getScoreColor(percentage)}`}>{percentage}%</span>
+                                                        ) : (
+                                                            <span className="text-xs text-pm-off-white/50">Non complété</span>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-pm-off-white/70 text-sm">Aucun quiz disponible pour le moment.</p>
+                                    )}
+                                </div>
+                            )}
+                            {activeTab === 'briefs' && (
+                                <div className="bg-black p-6 border border-pm-gold/20 rounded-lg shadow-lg shadow-black/30 space-y-4">
+                                    <h2 className="text-2xl font-playfair text-pm-gold mb-4">Briefings de Séances Photo</h2>
+                                    {myBriefs.length > 0 ? (
+                                        myBriefs.map(brief => (
+                                            <BriefItem key={brief.id} brief={brief} expandedBriefId={expandedBriefId} onToggle={handleToggleBrief} />
+                                        ))
+                                    ) : (
+                                        <p className="text-center text-pm-off-white/70 py-8">Votre boîte de réception est vide.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </main>
+                </div>
+            </div>
         </div>
-      </Layout>
     );
-  }
+};
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+const TabButton: React.FC<{name: string, icon: React.ElementType, isActive: boolean, onClick: () => void, notificationCount?: number}> = ({ name, icon: Icon, isActive, onClick, notificationCount = 0 }) => (
+    <button
+        onClick={onClick}
+        className={`relative flex items-center gap-2 px-4 py-2 font-medium text-sm rounded-t-lg transition-colors border-b-2 ${
+            isActive 
+            ? 'border-pm-gold text-pm-gold' 
+            : 'border-transparent text-pm-off-white/70 hover:text-pm-gold'
+        }`}
+    >
+        <Icon className="w-5 h-5" />
+        {name}
+        {notificationCount > 0 && (
+            <span className="absolute top-1 -right-1 flex h-4 w-4">
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-white text-xs items-center justify-center">{notificationCount}</span>
+            </span>
+        )}
+    </button>
+);
 
-  if (!profile) {
+const BriefItem: React.FC<{ brief: PhotoshootBrief, expandedBriefId: string | null, onToggle: (id: string) => void }> = ({ brief, expandedBriefId, onToggle }) => {
+    const isExpanded = expandedBriefId === brief.id;
     return (
-      <Layout>
-        <div className="container mx-auto px-4 py-20 text-center">
-          <User className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-          <h1 className="font-serif text-3xl font-bold text-foreground mb-4">
-            Profil non trouvé
-          </h1>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Votre compte n'est pas encore lié à un profil mannequin. 
-            Contactez l'administration pour plus d'informations.
-          </p>
-          <Button asChild>
-            <Link to="/contact">Nous contacter</Link>
-          </Button>
+        <div className="bg-pm-dark/50 border border-pm-off-white/10 rounded-lg overflow-hidden">
+            <button onClick={() => onToggle(brief.id)} className="w-full p-4 text-left flex justify-between items-center hover:bg-pm-dark">
+                <div className="flex items-center gap-3">
+                    {brief.status === 'Nouveau' && <span className="w-2.5 h-2.5 bg-pm-gold rounded-full flex-shrink-0 animate-pulse"></span>}
+                    {brief.status === 'Lu' && <CheckCircleIcon className="w-4 h-4 text-green-500 flex-shrink-0" />}
+                    <span className={`font-bold ${brief.status === 'Nouveau' ? 'text-pm-gold' : 'text-pm-off-white'}`}>{brief.theme}</span>
+                </div>
+                <span className="text-xs text-pm-off-white/60">{new Date(brief.dateTime).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+            </button>
+            {isExpanded && (
+                <div className="p-4 border-t border-pm-gold/20 bg-black animate-fade-in space-y-4">
+                    <div className="flex items-center gap-4 p-3 bg-pm-dark rounded-md">
+                        <CalendarDaysIcon className="w-6 h-6 text-pm-gold flex-shrink-0"/>
+                        <div>
+                            <p className="text-xs text-pm-off-white/70">Date & Heure</p>
+                            <p className="font-semibold">{new Date(brief.dateTime).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-4 p-3 bg-pm-dark rounded-md">
+                        <MapPinIcon className="w-6 h-6 text-pm-gold flex-shrink-0"/>
+                        <div>
+                            <p className="text-xs text-pm-off-white/70">Lieu</p>
+                            <p className="font-semibold">{brief.location}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-pm-gold mb-1">Style Vestimentaire</h4>
+                        <p className="text-sm text-pm-off-white/80 whitespace-pre-wrap">{brief.clothingStyle}</p>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-pm-gold mb-1">Accessoires</h4>
+                        <p className="text-sm text-pm-off-white/80 whitespace-pre-wrap">{brief.accessories}</p>
+                    </div>
+                </div>
+            )}
         </div>
-      </Layout>
     );
-  }
-
-  const trainingProgress = 45; // Placeholder for training progress
-  const completedModules = 3;
-  const totalModules = 6;
-
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 lg:px-8 py-12">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
-            Bienvenue, {profile.name}
-          </h1>
-          <p className="text-muted-foreground">
-            Gérez votre profil et suivez votre carrière
-          </p>
-        </motion.div>
-
-        {/* Profile Overview */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-1"
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-4">
-                    {profile.image_url ? (
-                      <img
-                        src={profile.image_url}
-                        alt={profile.name}
-                        className="h-32 w-32 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-32 w-32 rounded-full bg-accent flex items-center justify-center">
-                        <User className="h-16 w-16 text-muted-foreground" />
-                      </div>
-                    )}
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <h2 className="font-serif text-xl font-semibold text-foreground mb-1">
-                    {profile.name}
-                  </h2>
-                  <Badge variant="secondary" className="mb-4">
-                    {profile.level || "Débutant"}
-                  </Badge>
-                  
-                  <div className="w-full space-y-3 text-left">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Taille</span>
-                      <span className="font-medium text-foreground">{profile.height || "-"}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Genre</span>
-                      <span className="font-medium text-foreground">{profile.gender}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Pointure</span>
-                      <span className="font-medium text-foreground">{profile.shoe_size || "-"}</span>
-                    </div>
-                  </div>
-
-                  <Button className="w-full mt-6" variant="outline">
-                    Modifier le profil
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <Tabs defaultValue="portfolio" className="h-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-                <TabsTrigger value="bookings">Réservations</TabsTrigger>
-                <TabsTrigger value="messages">Messages</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="portfolio" className="mt-0">
-                <Card className="h-full">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Mon Portfolio</CardTitle>
-                        <CardDescription>Gérez vos photos de book</CardDescription>
-                      </div>
-                      <Button size="sm">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Ajouter
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Placeholder images */}
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div
-                          key={i}
-                          className="aspect-[3/4] rounded-lg bg-accent flex items-center justify-center"
-                        >
-                          <Image className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="bookings" className="mt-0">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Historique des Réservations</CardTitle>
-                    <CardDescription>Vos bookings passés et à venir</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-center text-muted-foreground py-8">
-                        Aucune réservation pour le moment
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="messages" className="mt-0">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Messagerie</CardTitle>
-                    <CardDescription>Échangez avec l'administration</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-center text-muted-foreground py-8">
-                      Aucun message
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        </div>
-
-        {/* Training Progress */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
-        >
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <GraduationCap className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle>Progression de la Formation</CardTitle>
-                    <CardDescription>{completedModules} modules sur {totalModules} complétés</CardDescription>
-                  </div>
-                </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/classroom">
-                    Continuer
-                    <ArrowUpRight className="h-4 w-4 ml-2" />
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Progress value={trainingProgress} className="h-2" />
-              <div className="grid sm:grid-cols-3 gap-4 mt-6">
-                {[
-                  { name: "Introduction", status: "completed" },
-                  { name: "Techniques de Défilé", status: "completed" },
-                  { name: "Poses & Expressions", status: "completed" },
-                  { name: "Nutrition & Bien-être", status: "current" },
-                  { name: "Gestion de Carrière", status: "locked" },
-                  { name: "Photographie", status: "locked" },
-                ].map((module) => (
-                  <div
-                    key={module.name}
-                    className={`flex items-center gap-2 p-3 rounded-lg ${
-                      module.status === "completed"
-                        ? "bg-emerald-500/10"
-                        : module.status === "current"
-                        ? "bg-primary/10"
-                        : "bg-muted"
-                    }`}
-                  >
-                    {module.status === "completed" ? (
-                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                    ) : module.status === "current" ? (
-                      <Clock className="h-4 w-4 text-primary shrink-0" />
-                    ) : (
-                      <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />
-                    )}
-                    <span className={`text-sm ${module.status === "locked" ? "text-muted-foreground" : "text-foreground"}`}>
-                      {module.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Financial & Absences */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Payments */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/10">
-                    <CreditCard className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <CardTitle>Historique des Paiements</CardTitle>
-                    <CardDescription>Vos cotisations mensuelles</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {payments.length > 0 ? (
-                  <div className="space-y-3">
-                    {payments.map((payment) => (
-                      <div
-                        key={payment.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
-                      >
-                        <div>
-                          <p className="font-medium text-foreground">{payment.month}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {payment.amount.toLocaleString()} FCFA
-                          </p>
-                        </div>
-                        <Badge variant={payment.status === "Payé" ? "default" : "secondary"}>
-                          {payment.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    Aucun paiement enregistré
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Absences */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-red-500/10">
-                    <CalendarX className="h-5 w-5 text-red-500" />
-                  </div>
-                  <div>
-                    <CardTitle>Mes Absences</CardTitle>
-                    <CardDescription>Suivi des absences enregistrées</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {absences.length > 0 ? (
-                  <div className="space-y-3">
-                    {absences.map((absence) => (
-                      <div
-                        key={absence.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
-                      >
-                        <div>
-                          <p className="font-medium text-foreground">{absence.date}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {absence.reason || "Non spécifié"}
-                          </p>
-                        </div>
-                        <Badge variant={absence.is_excused ? "default" : "destructive"}>
-                          {absence.is_excused ? "Excusée" : "Non excusée"}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    Aucune absence enregistrée
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </div>
-    </Layout>
-  );
 };
 
 export default ModelDashboard;
