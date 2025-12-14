@@ -1,57 +1,42 @@
-
 import React, { useState, useCallback, useRef } from 'react';
-import { useData } from '../../contexts/DataContext';
 import { ArrowUpTrayIcon, ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { storage, storageRef, uploadBytes, getDownloadURL } from '../../lib/firebase/config';
 
 interface ImageUploaderProps {
     label: string;
     value: string;
     onChange: (value: string) => void;
+    folder?: string;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ label, value, onChange }) => {
-    const { data } = useData();
+const ImageUploader: React.FC<ImageUploaderProps> = ({ label, value, onChange, folder = 'images' }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleUpload = useCallback(async (file: File) => {
-        const apiKey = data?.apiKeys?.imgbbApiKey;
-        if (!apiKey || apiKey === 'YOUR_IMGBB_API_KEY_HERE') {
-            setError("La clé API ImgBB n'est pas configurée dans les paramètres.");
-            return;
-        }
-
         setIsLoading(true);
         setError(null);
 
-        const formData = new FormData();
-        formData.append('image', file);
-
         try {
-            const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-                method: 'POST',
-                body: formData,
-            });
+            // Créer un nom de fichier unique
+            const timestamp = Date.now();
+            const fileName = `${folder}/${timestamp}_${file.name}`;
+            const fileRef = storageRef(storage, fileName);
 
-            if (!response.ok) {
-                 const errorData = await response.json();
-                throw new Error(errorData?.error?.message || "L'upload a échoué. Vérifiez la clé API et le fichier.");
-            }
+            // Upload vers Firebase Storage
+            await uploadBytes(fileRef, file);
 
-            const result = await response.json();
-            if (result.data && result.data.url) {
-                onChange(result.data.url);
-            } else {
-                throw new Error("L'API ImgBB n'a pas retourné d'URL valide.");
-            }
+            // Récupérer l'URL de téléchargement
+            const downloadURL = await getDownloadURL(fileRef);
+            onChange(downloadURL);
         } catch (err: any) {
             setError(err.message || "Une erreur est survenue lors de l'upload.");
             console.error(err);
         } finally {
             setIsLoading(false);
         }
-    }, [data?.apiKeys?.imgbbApiKey, onChange]);
+    }, [folder, onChange]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
