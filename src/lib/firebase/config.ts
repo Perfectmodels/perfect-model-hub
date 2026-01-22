@@ -4,14 +4,14 @@ import { getDatabase, ref, set, get, update, remove } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBawZl4SJz7drhzIrG0dnazSglyF6vmKCg",
-    authDomain: "perfect-156b5.firebaseapp.com",
-    databaseURL: "https://perfect-156b5-default-rtdb.firebaseio.com",
-    projectId: "perfect-156b5",
-    storageBucket: "perfect-156b5.firebasestorage.app",
-    messagingSenderId: "435536634816",
-    appId: "1:435536634816:web:2f480f6d627e032da1de25",
-    measurementId: "G-H9WJWPEY59"
+    apiKey: "AIzaSyC_5TsXHPLloX80SzN9GQaaDL4EPlL-WSc",
+    authDomain: "perfectmodels-4e5fa.firebaseapp.com",
+    databaseURL: "https://perfectmodels-4e5fa-default-rtdb.firebaseio.com",
+    projectId: "perfectmodels-4e5fa",
+    storageBucket: "perfectmodels-4e5fa.firebasestorage.app",
+    messagingSenderId: "1072431985374",
+    appId: "1:1072431985374:web:55f7a7899d05e68fe5484f",
+    measurementId: "G-CSP65WPY89"
 };
 
 // Initialize Firebase
