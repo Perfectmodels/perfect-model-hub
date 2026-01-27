@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { ArrowUpTrayIcon, ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import { storage, storageRef, uploadBytes, getDownloadURL } from '../../lib/firebase/config';
 
 interface ImageUploaderProps {
     label: string;
@@ -9,6 +8,7 @@ interface ImageUploaderProps {
     folder?: string;
 }
 
+// Simple image uploader using ImgBB API (or fallback to URL input)
 const ImageUploader: React.FC<ImageUploaderProps> = ({ label, value, onChange, folder = 'images' }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -19,24 +19,36 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ label, value, onChange, f
         setError(null);
 
         try {
-            // Créer un nom de fichier unique
-            const timestamp = Date.now();
-            const fileName = `${folder}/${timestamp}_${file.name}`;
-            const fileRef = storageRef(storage, fileName);
+            // Use ImgBB API for image hosting
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // ImgBB API key from constants (free tier)
+            const apiKey = '59f0176178bae04b1f2cbd7f5bc03614';
+            
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                method: 'POST',
+                body: formData,
+            });
 
-            // Upload vers Firebase Storage
-            await uploadBytes(fileRef, file);
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
 
-            // Récupérer l'URL de téléchargement
-            const downloadURL = await getDownloadURL(fileRef);
-            onChange(downloadURL);
+            const data = await response.json();
+            
+            if (data.success) {
+                onChange(data.data.url);
+            } else {
+                throw new Error(data.error?.message || 'Upload failed');
+            }
         } catch (err: any) {
             setError(err.message || "Une erreur est survenue lors de l'upload.");
             console.error(err);
         } finally {
             setIsLoading(false);
         }
-    }, [folder, onChange]);
+    }, [onChange]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
