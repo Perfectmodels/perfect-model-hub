@@ -1,73 +1,184 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CheckBadgeIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckBadgeIcon, ChevronDownIcon, CalendarDaysIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { AchievementCategory, ModelDistinction, FAQCategory } from '../types';
 import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import TestimonialCarousel from "../components/components/TestimonialCarousel";
+import PageHeader from '../components/ui/PageHeader';
+import Section from '../components/ui/Section';
+import PremiumCard from '../components/ui/PremiumCard';
+import PremiumButton from '../components/ui/PremiumButton';
+
+const FAQItem: React.FC<{ item: { question: string, answer: string }, isOpen: boolean, onClick: () => void }> = ({ item, isOpen, onClick }) => {
+    return (
+        <motion.div
+            className="mb-4 overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm"
+            initial={false}
+        >
+            <button
+                onClick={onClick}
+                className="w-full flex justify-between items-center p-6 text-left"
+                aria-expanded={isOpen}
+            >
+                <span className="font-bold text-lg text-white font-playfair">{item.question}</span>
+                <ChevronDownIcon
+                    className={`w-5 h-5 text-pm-gold transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                />
+            </button>
+            <AnimatePresence initial={false}>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="px-6 pb-6 text-gray-400 leading-relaxed border-t border-white/5 pt-4">
+                            {item.answer}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+}
 
 const FAQ: React.FC<{ faqData: FAQCategory[] }> = ({ faqData }) => {
-    const [openFAQ, setOpenFAQ] = useState<string | null>('0-0'); // Open the first question by default
+    const [openFAQ, setOpenFAQ] = useState<string | null>('0-0');
 
-    const toggleFAQ = (id: string) => {
-        setOpenFAQ(openFAQ === id ? null : id);
-    };
-
-    if (!faqData || faqData.length === 0) {
-        return null;
-    }
+    if (!faqData || faqData.length === 0) return null;
 
     return (
-        <section>
-            <h2 className="section-title">Questions Fréquemment Posées</h2>
-            <div className="max-w-4xl mx-auto space-y-8">
-                {faqData.map((category, catIndex) => (
-                    <div key={catIndex}>
-                        <h3 className="text-2xl font-playfair text-pm-gold mb-4">{category.category}</h3>
-                        <div className="space-y-3">
-                            {category.items.map((item, itemIndex) => {
-                                const faqId = `${catIndex}-${itemIndex}`;
-                                const isOpen = openFAQ === faqId;
-                                return (
-                                    <div key={itemIndex} className="bg-black border border-pm-gold/20 rounded-lg overflow-hidden">
-                                        <button
-                                            onClick={() => toggleFAQ(faqId)}
-                                            className="w-full flex justify-between items-center p-5 text-left"
-                                            aria-expanded={isOpen}
-                                            aria-controls={`faq-answer-${faqId}`}
-                                        >
-                                            <span className="font-bold text-lg text-pm-off-white">{item.question}</span>
-                                            <ChevronDownIcon className={`w-6 h-6 text-pm-gold flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        <div
-                                            id={`faq-answer-${faqId}`}
-                                            className="grid transition-all duration-500 ease-in-out"
-                                            style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
-                                        >
-                                            <div className="overflow-hidden">
-                                                <div className="px-5 pb-5 text-pm-off-white/80">
-                                                    {item.answer}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+        <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-playfair text-white text-center mb-12">
+                Questions <span className="text-pm-gold">Fréquentes</span>
+            </h2>
+            {faqData.map((category, catIndex) => (
+                <div key={catIndex} className="mb-12">
+                    <h3 className="text-xl font-bold text-pm-gold mb-6 uppercase tracking-wider">{category.category}</h3>
+                    <div>
+                        {category.items.map((item, itemIndex) => (
+                            <FAQItem
+                                key={`${catIndex}-${itemIndex}`}
+                                item={item}
+                                isOpen={openFAQ === `${catIndex}-${itemIndex}`}
+                                onClick={() => setOpenFAQ(openFAQ === `${catIndex}-${itemIndex}` ? null : `${catIndex}-${itemIndex}`)}
+                            />
+                        ))}
                     </div>
-                ))}
-            </div>
-        </section>
+                </div>
+            ))}
+        </div>
     );
 };
 
+const DistinctionCard: React.FC<{ distinction: ModelDistinction, index: number }> = ({ distinction, index }) => (
+    <PremiumCard delay={index * 0.1} className="p-8 h-full flex flex-col items-center text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pm-gold/20 to-transparent border border-pm-gold/30 flex items-center justify-center mb-6 text-pm-gold">
+            <TrophyIcon className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-playfair font-bold text-white mb-4">{distinction.name}</h3>
+        <div className="space-y-2 w-full">
+            {distinction.titles.map((title, i) => (
+                 <div key={i} className="flex items-center justify-center gap-2 text-sm text-gray-400 bg-white/5 py-2 px-3 rounded-lg">
+                    <span className="text-pm-gold">✦</span>
+                    {title}
+                 </div>
+            ))}
+        </div>
+    </PremiumCard>
+);
+
+const TimelineItem: React.FC<{ item: { year: string, event: string }, index: number }> = ({ item, index }) => {
+    const isLeft = index % 2 === 0;
+
+    return (
+        <div className={`relative flex items-center justify-between w-full mb-8 md:mb-12 ${isLeft ? 'flex-row-reverse' : ''}`}>
+            <div className="hidden md:block w-5/12" />
+
+            <div className="absolute left-4 md:left-1/2 w-8 h-8 bg-pm-dark border-2 border-pm-gold rounded-full transform -translate-x-1/2 z-10 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.5)]">
+                 <div className="w-2 h-2 bg-pm-gold rounded-full animate-pulse" />
+            </div>
+
+            <motion.div
+                className="w-full pl-12 md:pl-0 md:w-5/12"
+                initial={{ opacity: 0, x: isLeft ? 50 : -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.6 }}
+            >
+                <div className={`p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:border-pm-gold/30 transition-colors ${!isLeft ? 'md:text-right' : ''}`}>
+                    <span className="text-4xl font-playfair font-bold text-pm-gold/20 absolute top-2 right-4 select-none">{item.year}</span>
+                    <h3 className="text-2xl font-bold text-pm-gold mb-2 relative z-10">{item.year}</h3>
+                    <p className="text-gray-300 leading-relaxed relative z-10">{item.event}</p>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+const AchievementsTabs: React.FC<{ achievements: AchievementCategory[] }> = ({ achievements }) => {
+    const [activeTab, setActiveTab] = useState(0);
+
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+                {achievements.map((category, index) => (
+                    <button
+                        key={index}
+                        onClick={() => setActiveTab(index)}
+                        className={`
+                            px-6 py-3 rounded-full text-sm font-bold uppercase tracking-widest transition-all duration-300
+                            ${activeTab === index
+                                ? 'bg-pm-gold text-pm-dark shadow-lg shadow-pm-gold/20 scale-105'
+                                : 'bg-transparent text-gray-400 border border-white/20 hover:border-pm-gold hover:text-pm-gold'}
+                        `}
+                    >
+                        {category.name}
+                    </button>
+                ))}
+            </div>
+
+            <div className="min-h-[300px]">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        {achievements[activeTab].items.map((item, idx) => (
+                            <div key={idx} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                                <CheckBadgeIcon className="w-6 h-6 text-pm-gold flex-shrink-0" />
+                                <span className="text-gray-300">{item}</span>
+                            </div>
+                        ))}
+                    </motion.div>
+                </AnimatePresence>
+
+                {achievements[activeTab].name === "Défilés de Mode" && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className="mt-8 text-center p-6 rounded-xl bg-pm-gold/10 border border-pm-gold/20"
+                    >
+                        <p className="text-pm-gold italic font-playfair text-lg">
+                            "Notre agence a participé à tous les événements de mode majeurs depuis 2021."
+                        </p>
+                    </motion.div>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const Agency: React.FC = () => {
   const { data, isInitialized } = useData();
 
   if (!isInitialized || !data) {
-    return <div className="min-h-screen bg-pm-dark"></div>;
+    return <div className="min-h-screen bg-pm-dark" />;
   }
   
   const { agencyInfo, modelDistinctions, agencyTimeline, agencyAchievements, agencyPartners, siteImages, faqData } = data;
@@ -76,160 +187,112 @@ const Agency: React.FC = () => {
     <div className="bg-pm-dark text-pm-off-white">
       <SEO 
         title="L'Agence | Notre Histoire et Nos Valeurs"
-        description="Plongez au cœur de Perfect Models Management. Découvrez notre histoire, nos valeurs de professionnalisme et d'excellence, et les services qui font de nous un leader de la mode au Gabon."
-        keywords="histoire agence pmm, valeurs mannequinat, services agence de mannequins, agence de mode gabon, parfait asseko"
+        description="Plongez au cœur de Perfect Models Management."
         image={siteImages.agencyHistory}
       />
-      <div className="page-container space-y-20 lg:space-y-28">
 
-        {/* À Propos */}
-        <section>
-          <h2 className="section-title">Notre Histoire</h2>
-          <div className="content-section flex flex-col md:flex-row items-center gap-12">
-            <div className="md:w-1/2 p-2 border-2 border-pm-gold">
-              <img src={siteImages.agencyHistory} alt="L'équipe Perfect Models" className="w-full h-full object-cover"/>
-            </div>
-            <div className="md:w-1/2 text-lg leading-relaxed text-pm-off-white/90">
-              <p className="mb-4">{agencyInfo.about.p1}</p>
-              <p>{agencyInfo.about.p2}</p>
-            </div>
-          </div>
-        </section>
+      <PageHeader
+        title="Notre Agence"
+        subtitle="Professionnalisme, Excellence et Éthique au cœur de la mode africaine."
+        bgImage={siteImages.agencyHistory}
+      />
 
-        {/* Distinctions */}
-        <section>
-          <h2 className="section-title">Distinctions de nos Mannequins</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Vision & Mission */}
+      <Section dark>
+        <div className="flex flex-col md:flex-row gap-16 items-center">
+            <div className="md:w-1/2 relative">
+                <div className="absolute -top-10 -left-10 w-20 h-20 border-t-2 border-l-2 border-pm-gold rounded-tl-3xl opacity-50" />
+                <div className="absolute -bottom-10 -right-10 w-20 h-20 border-b-2 border-r-2 border-pm-gold rounded-br-3xl opacity-50" />
+                <img src={siteImages.about} alt="About Us" className="rounded-2xl shadow-2xl grayscale hover:grayscale-0 transition-all duration-700" />
+            </div>
+            <div className="md:w-1/2">
+                <h2 className="text-sm font-bold text-pm-gold uppercase tracking-widest mb-4">À Propos</h2>
+                <h3 className="text-4xl font-playfair text-white mb-8">Une Vision <span className="text-pm-gold">Unique</span></h3>
+                <div className="space-y-6 text-gray-400 text-lg leading-relaxed">
+                    <p>{agencyInfo.about.p1}</p>
+                    <p>{agencyInfo.about.p2}</p>
+                </div>
+            </div>
+        </div>
+      </Section>
+
+      {/* Distinctions */}
+      <Section bgImage={siteImages.hero}>
+         <div className="text-center mb-16">
+            <h2 className="text-pm-gold uppercase tracking-widest text-sm font-bold mb-3">Excellence Reconnue</h2>
+            <h3 className="text-4xl md:text-5xl font-playfair text-white">Nos Distinctions</h3>
+         </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {modelDistinctions.map((distinction, index) => (
-              <DistinctionCard key={index} distinction={distinction} />
+              <DistinctionCard key={index} distinction={distinction} index={index} />
             ))}
-          </div>
-        </section>
+         </div>
+      </Section>
 
-        {/* Parcours (Timeline) */}
-        <section>
-          <h2 className="section-title">Notre Parcours</h2>
-           <div className="relative max-w-4xl mx-auto">
-                <div className="absolute left-1/2 h-full w-0.5 bg-pm-gold/30 transform -translate-x-1/2"></div>
+      {/* Timeline */}
+      <Section dark>
+          <div className="text-center mb-16">
+             <h2 className="text-pm-gold uppercase tracking-widest text-sm font-bold mb-3">Évolution</h2>
+             <h3 className="text-4xl md:text-5xl font-playfair text-white">Notre Parcours</h3>
+          </div>
+
+          <div className="relative max-w-4xl mx-auto">
+                <div className="absolute left-4 md:left-1/2 h-full w-px bg-gradient-to-b from-transparent via-pm-gold/40 to-transparent transform md:-translate-x-1/2" />
                 {agencyTimeline.map((item, index) => (
-                    <div key={index} className={`relative flex items-center w-full my-8 ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-                        <div className={`w-1/2 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
-                            <div className="bg-black p-4 border border-pm-gold/20 rounded-lg card-base">
-                                <h3 className="text-xl font-bold text-pm-gold">{item.year}</h3>
-                                <p className="text-pm-off-white/80 mt-1">{item.event}</p>
-                            </div>
-                        </div>
-                        <div className="absolute left-1/2 w-6 h-6 bg-pm-dark border-2 border-pm-gold rounded-full transform -translate-x-1/2 z-10"></div>
-                    </div>
+                    <TimelineItem key={index} item={item} index={index} />
                 ))}
-            </div>
-        </section>
-
-         {/* Réalisations */}
-        <section>
-            <h2 className="section-title">Nos Réalisations</h2>
-            <AchievementsTabs achievements={agencyAchievements} />
-        </section>
-
-         {/* Partenaires */}
-        <section>
-          <h2 className="section-title">Nos Partenaires Clé</h2>
-          <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 text-center">
-            {agencyPartners.map((partner, index) => (
-                <p key={index} className="text-lg font-normal text-pm-off-white/80">{partner.name}</p>
-            ))}
           </div>
-        </section>
+      </Section>
 
-        {/* Témoignages (Testimonials) */}
-        <section>
-            <h2 className="section-title">Ce qu'ils disent de nous</h2>
-            <div className="mt-8">
-                <TestimonialCarousel />
+      {/* Achievements */}
+      <Section className="bg-gradient-to-b from-pm-dark to-black">
+         <div className="text-center mb-16">
+            <h2 className="text-pm-gold uppercase tracking-widest text-sm font-bold mb-3">Portfolios</h2>
+            <h3 className="text-4xl md:text-5xl font-playfair text-white">Nos Réalisations</h3>
+         </div>
+         <AchievementsTabs achievements={agencyAchievements} />
+      </Section>
+
+      {/* Partners */}
+      <Section dark>
+         <h3 className="text-center text-xl font-playfair text-white mb-12 opacity-80">Ils nous font confiance</h3>
+         <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 max-w-5xl mx-auto opacity-70 hover:opacity-100 transition-opacity duration-500">
+            {agencyPartners.map((partner, index) => (
+                <div key={index} className="text-xl md:text-2xl font-bold font-playfair text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-200">
+                    {partner.name}
+                </div>
+            ))}
+         </div>
+      </Section>
+
+      {/* Testimonials */}
+      <Section bgImage={siteImages.fashionDayBg}>
+           <h2 className="text-center text-pm-gold uppercase tracking-widest text-sm font-bold mb-12">Témoignages</h2>
+           <TestimonialCarousel />
+      </Section>
+
+      {/* FAQ */}
+      <Section dark>
+         <FAQ faqData={faqData} />
+      </Section>
+
+      {/* CTA */}
+      <section className="py-24 bg-pm-gold text-pm-dark text-center">
+         <div className="container mx-auto px-6">
+            <h2 className="text-4xl font-playfair font-bold mb-6">Prêt à collaborer avec l'élite ?</h2>
+            <p className="max-w-2xl mx-auto mb-10 text-lg font-medium opacity-90">
+                Que ce soit pour un casting, un défilé ou une campagne publicitaire, nous sommes là pour réaliser vos projets.
+            </p>
+            <div className="flex justify-center gap-4">
+                 <PremiumButton to="/contact" variant="outline" className="border-pm-dark text-pm-dark hover:bg-pm-dark hover:text-pm-gold">
+                    Nous Contacter
+                 </PremiumButton>
             </div>
-        </section>
-        
-        {/* FAQ Section */}
-        <FAQ faqData={faqData} />
+         </div>
+      </section>
 
-        {/* Contact CTA */}
-        <section className="text-center content-section">
-          <h3 className="text-2xl font-playfair text-pm-gold mb-4">Une question ? Un projet ?</h3>
-          <p className="text-pm-off-white/80 max-w-2xl mx-auto mb-8">
-              Nous serions ravis d'échanger avec vous. Visitez notre page de contact pour nous envoyer un message ou trouver nos coordonnées.
-          </p>
-          <Link to="/contact" className="px-10 py-4 bg-pm-gold text-pm-dark font-bold uppercase tracking-widest text-sm rounded-full text-center transition-all duration-300 hover:bg-white hover:shadow-2xl hover:shadow-pm-gold/30">
-              Nous Contacter
-          </Link>
-        </section>
-
-      </div>
     </div>
   );
 };
-
-const DistinctionCard: React.FC<{ distinction: ModelDistinction }> = ({ distinction }) => (
-    <div className="card-base p-6 text-center h-full flex flex-col justify-center items-center">
-        <CheckBadgeIcon className="w-12 h-12 text-pm-gold mx-auto mb-4" aria-hidden="true" />
-        <h3 className="text-xl font-playfair text-pm-gold">{distinction.name}</h3>
-        <ul className="mt-2 text-sm text-pm-off-white/80 space-y-1">
-            {distinction.titles.map((title, index) => <li key={index}>✦ {title}</li>)}
-        </ul>
-    </div>
-);
-
-const AchievementsTabs: React.FC<{ achievements: AchievementCategory[] }> = ({ achievements }) => {
-    const [activeTab, setActiveTab] = useState(0);
-
-    return (
-        <div>
-            <div role="tablist" aria-label="Nos réalisations" className="flex justify-center border-b border-pm-gold/20 mb-8">
-                {achievements.map((category, index) => (
-                    <button
-                        key={index}
-                        role="tab"
-                        id={`tab-${index}`}
-                        aria-controls={`tab-panel-${index}`}
-                        aria-selected={activeTab === index}
-                        onClick={() => setActiveTab(index)}
-                        className={`px-6 py-3 text-sm uppercase tracking-wider font-bold transition-colors relative ${activeTab === index ? 'text-pm-gold' : 'text-pm-off-white/70 hover:text-pm-gold'}`}
-                    >
-                        {category.name}
-                        {activeTab === index && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pm-gold"/>}
-                    </button>
-                ))}
-            </div>
-            {achievements.map((category, index) => (
-                 <div
-                    key={index}
-                    id={`tab-panel-${index}`}
-                    role="tabpanel"
-                    hidden={activeTab !== index}
-                    aria-labelledby={`tab-${index}`}
-                    className={`transition-opacity duration-300 ${activeTab === index ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    {activeTab === index && (
-                        <div className="content-section animate-fade-in">
-                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-pm-off-white/90">
-                                {category.items.map((item, itemIndex) => (
-                                    <div key={itemIndex} className="bg-pm-dark/50 p-4 rounded-lg flex items-start gap-3 border border-pm-gold/10">
-                                        <CheckBadgeIcon className="w-6 h-6 text-pm-gold flex-shrink-0 mt-0.5" />
-                                        <span>{item}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            {category.name === "Défilés de Mode" && 
-                                <p className="text-center mt-10 text-pm-gold/90 italic text-sm md:text-base bg-pm-dark/50 p-4 rounded-md">
-                                    "Notre agence a participé à tous les événements de mode depuis 2021, son année de création."
-                                </p>
-                            }
-                        </div>
-                    )}
-                </div>
-            ))}
-        </div>
-    );
-};
-
 
 export default Agency;
