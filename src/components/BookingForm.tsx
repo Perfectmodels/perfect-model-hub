@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { BookingRequest } from '../types';
+import { supabase } from '../utils/supabase';
 
 interface BookingFormProps {
     prefilledModelName?: string;
@@ -52,6 +53,22 @@ const BookingForm: React.FC<BookingFormProps> = ({ prefilledModelName, onSuccess
         try {
             const updatedRequests = [...(data.bookingRequests || []), newRequest];
             await saveData({ ...data, bookingRequests: updatedRequests });
+
+            // Send confirmation email via template
+            await supabase.functions.invoke('send-email', {
+                body: {
+                    to: formData.clientEmail,
+                    template: 'bookingRequest',
+                    data: {
+                        clientName: formData.clientName,
+                        clientCompany: formData.clientCompany,
+                        requestedModels: formData.requestedModels,
+                        startDate: formData.startDate,
+                        endDate: formData.endDate,
+                        message: formData.message
+                    }
+                }
+            });
 
             setStatus('success');
             setStatusMessage('Demande de booking envoyée ! Notre équipe vous contactera prochainement.');

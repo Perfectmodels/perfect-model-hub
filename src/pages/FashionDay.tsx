@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDaysIcon, MapPinIcon, SparklesIcon, UserGroupIcon, MicrophoneIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { FashionDayEvent, Artist } from '../types';
 
@@ -88,7 +88,7 @@ const FashionDay: React.FC = () => {
               <button
                 key={event.edition}
                 onClick={() => setSelectedEdition(event)}
-                aria-pressed={selectedEdition.edition === event.edition}
+                aria-pressed={selectedEdition.edition === event.edition ? "true" : "false"}
                 className={`px-6 py-2 text-sm uppercase tracking-widest rounded-full transition-colors duration-300 ${selectedEdition.edition === event.edition ? 'bg-pm-gold text-pm-dark' : 'bg-black border border-pm-gold text-pm-gold hover:bg-pm-gold hover:text-pm-dark'}`}
               >
                 Édition {event.edition} ({new Date(event.date).getFullYear()})

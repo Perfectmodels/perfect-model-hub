@@ -1,76 +1,13 @@
 import React, { useEffect, Suspense } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { DataProvider } from './contexts/DataContext';
+import { DataProvider, useData } from './contexts/DataContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import AIAssistantIcon from './components/common/AIAssistantIcon';
-import { PWAInstaller } from './components/common/PWAInstaller';
+import AIAssistantIcon from './components/components/AIAssistantIcon';
+import { PWAInstaller } from './components/components/PWAInstaller';
 import { registerServiceWorker } from './utils/pwa';
 import routes from './config/routes';
-
-// Lazy-loaded Pages
-const Home = lazy(() => import('./pages/Home'));
-const Agency = lazy(() => import('./pages/Agency'));
-const Models = lazy(() => import('./pages/Models'));
-const ModelDetail = lazy(() => import('./pages/ModelDetail'));
-const FashionDay = lazy(() => import('./pages/FashionDay'));
-const Magazine = lazy(() => import('./pages/Magazine'));
-const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Services = lazy(() => import('./pages/Services'));
-const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
-const Casting = lazy(() => import('./pages/Casting'));
-const CastingForm = lazy(() => import('./pages/CastingForm'));
-const FashionDayApplicationForm = lazy(() => import('./pages/FashionDayApplicationForm'));
-const Login = lazy(() => import('./pages/Login'));
-const Activity = lazy(() => import('./pages/Activity')); // Renamed Formations
-const ChapterDetail = lazy(() => import('./pages/ChapterDetail'));
-const ModelDashboard = lazy(() => import('./pages/ModelDashboard')); // Profil
-const ClassroomForum = lazy(() => import('./pages/ClassroomForum'));
-const ForumThread = lazy(() => import('./pages/ForumThread'));
-// FIX: Removed Beginner Classroom pages as the feature has been deprecated.
-const Chat = lazy(() => import('./pages/Chat'));
-const ImageGeneration = lazy(() => import('./pages/ImageGeneration'));
-const ImageAnalysis = lazy(() => import('./pages/ImageAnalysis'));
-const LiveChat = lazy(() => import('./pages/LiveChat'));
-
-
-// Admin Pages
-const Admin = lazy(() => import('./pages/Admin'));
-const AdminAgency = lazy(() => import('./pages/AdminAgency'));
-const AdminCasting = lazy(() => import('./pages/AdminCasting'));
-const AdminCastingResults = lazy(() => import('./pages/AdminCastingResults'));
-const AdminClassroom = lazy(() => import('./pages/AdminClassroom'));
-const AdminClassroomProgress = lazy(() => import('./pages/AdminClassroomProgress'));
-const AdminFashionDay = lazy(() => import('./pages/AdminFashionDay'));
-const AdminFashionDayEvents = lazy(() => import('./pages/AdminFashionDayEvents'));
-// FIX: Corrected import paths for Admin pages to resolve module not found errors.
-const AdminMagazine = lazy(() => import('./pages/AdminMagazine'));
-const AdminModelAccess = lazy(() => import('./pages/AdminModelAccess'));
-const AdminModels = lazy(() => import('./pages/AdminModels'));
-const AdminNews = lazy(() => import('./pages/AdminNews'));
-const AdminRecovery = lazy(() => import('./pages/AdminRecovery'));
-const AdminSettings = lazy(() => import('./pages/AdminSettings'));
-const AdminComments = lazy(() => import('./pages/AdminComments'));
-const AdminBookings = lazy(() => import('./pages/AdminBookings'));
-const AdminMessages = lazy(() => import('./pages/AdminMessages'));
-// FIX: Removed AdminBeginnerStudents as the feature has been deprecated.
-const AdminPayments = lazy(() => import('./pages/AdminPayments'));
-const AdminAbsences = lazy(() => import('./pages/AdminAbsences'));
-const AdminArtisticDirection = lazy(() => import('./pages/AdminArtisticDirection'));
-const AdminMailing = lazy(() => import('./pages/AdminMailing'));
-
-
-// Role-specific pages
-const JuryCasting = lazy(() => import('./pages/JuryCasting'));
-const RegistrationCasting = lazy(() => import('./pages/RegistrationCasting'));
-
-// Static Pages
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-
 
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
@@ -102,21 +39,7 @@ const pageTransition = {
     type: "tween",
     ease: "anticipate",
     duration: 0.5
-};
-
-
-// Animation variants for page transitions
-const pageVariants = {
-  initial: { opacity: 0 },
-  in: { opacity: 1 },
-  out: { opacity: 0 }
-};
-
-const pageTransition = {
-  type: 'tween',
-  ease: 'easeInOut',
-  duration: 0.3
-};
+} as any;
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -131,7 +54,7 @@ const AnimatedRoutes: React.FC = () => {
           path={route.path} 
           element={
             <ProtectedRoute roles={route.roles}>
-              <Suspense fallback={<div>Chargement...</div>}>
+              <Suspense fallback={<LoadingFallback />}>
                 <Component />
               </Suspense>
             </ProtectedRoute>
@@ -145,7 +68,7 @@ const AnimatedRoutes: React.FC = () => {
         key={route.path} 
         path={route.path} 
         element={
-          <Suspense fallback={<div>Chargement...</div>}>
+          <Suspense fallback={<LoadingFallback />}>
             <Component />
           </Suspense>
         } 
@@ -208,24 +131,15 @@ const AppContent: React.FC = () => {
 
     return (
         <Layout>
-            <Suspense fallback={<LoadingFallback />}>
-                <AnimatedRoutes />
-            </Suspense>
+            <AnimatedRoutes />
             <AIAssistantIcon />
+            <PWAInstaller />
+            <ScrollToTop />
         </Layout>
     );
 }
 
-// Component to handle scroll to top on route change
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-};
+import { AuthProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -234,14 +148,11 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <DataProvider>
-        <Layout>
-          <AnimatedRoutes />
-          <AIAssistantIcon />
-          <PWAInstaller />
-          <ScrollToTop />
-        </Layout>
-      </DataProvider>
+      <AuthProvider>
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
+      </AuthProvider>
     </HashRouter>
   );
 };

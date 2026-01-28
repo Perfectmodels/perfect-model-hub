@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { LockClosedIcon, UserIcon, XMarkIcon, PhoneIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { RecoveryRequest } from '../types';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ActiveUser {
   name: string;
@@ -41,11 +42,49 @@ const Login: React.FC = () => {
         return;
     }
 
-    const timestamp = new Date().toISOString();
     const normalizedUsername = username.toLowerCase().trim();
+    const isEmail = normalizedUsername.includes('@');
 
+    // Attempt Supabase Authentication if it looks like an email
+    if (isEmail) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: normalizedUsername,
+          password: password,
+        });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // If successful, we still might need to set some legacy session items 
+          // to maintain compatibility with other parts of the app during migration
+          const role = authData.user.app_metadata?.role || authData.user.user_metadata?.role || 'student';
+          sessionStorage.setItem('classroom_access', 'granted');
+          sessionStorage.setItem('classroom_role', role);
+          sessionStorage.setItem('userId', authData.user.id);
+          sessionStorage.setItem('userName', authData.user.user_metadata?.name || authData.user.email || '');
+
+          const pathMap = {
+            admin: '/admin',
+            student: '/profil',
+            jury: '/jury/casting',
+            registration: '/enregistrement/casting'
+          };
+          
+          navigate((pathMap as any)[role] || '/');
+          return;
+        }
+      } catch (err: any) {
+        setError(err.message || 'Erreur d\'authentification Supabase.');
+        return;
+      }
+    }
+
+    // Legacy Authentication Fallback
+    const timestamp = new Date().toISOString();
     const users = [
-        { type: 'admin', user: { name: 'Admin', username: 'admin', password: 'admin2025' }, path: '/admin' },
+        { type: 'admin', user: { name: 'Directeur', username: 'admin', password: 'admin2025' }, path: '/admin' },
+        { type: 'admin', user: { name: 'Administration', username: 'contact@perfectmodels.ga', password: 'pmm2025@' }, path: '/admin' },
         ...data.models.map(m => ({ type: 'student', user: m, path: '/profil' })),
         ...data.juryMembers.map(j => ({ type: 'jury', user: j, path: '/jury/casting' })),
         ...data.registrationStaff.map(s => ({ type: 'registration', user: s, path: '/enregistrement/casting' })),
@@ -77,7 +116,6 @@ const Login: React.FC = () => {
         navigate(foundUser.path);
         return;
     }
-    // FIX: Removed Beginner Student login logic as the feature is deprecated.
 
     setError('Identifiant ou mot de passe incorrect.');
     setPassword('');

@@ -1,24 +1,58 @@
-# Logs
-logs
-*.log
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Typescript
+*.tsbuildinfo
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Supabase
+.supabase/
+supabase/.temp/
+supabase/functions/.import_map.json
+
+# Data Exports & Backups
+*.json
+!package.json
+!tsconfig.json
+!composer.json
+!package-lock.json
+!supabase/config.toml
+!supabase/seed.json
+!supabase/migrations/*.sql
+*.sql.bak
+*.json.bak
+perfectmodels-4e5fa-default-rtdb-export.json

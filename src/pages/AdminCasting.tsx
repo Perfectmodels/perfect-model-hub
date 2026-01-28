@@ -2,10 +2,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { CastingApplication, CastingApplicationStatus, Model } from '../types';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, TrashIcon, EyeIcon, XMarkIcon, PrinterIcon } from '@heroicons/react/24/outline';
-import PrintableCastingSheet from '../components/PrintableCastingSheet';
+import PrintableCastingSheet from "../components/components/PrintableCastingSheet";
 
 const AdminCasting: React.FC = () => {
     const { data, saveData, isInitialized } = useData();

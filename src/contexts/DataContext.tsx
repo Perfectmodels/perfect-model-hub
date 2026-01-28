@@ -1,4 +1,3 @@
-// Main Data Context - Now using Neon PostgreSQL
-// Re-export from NeonDataContext for backward compatibility
-export { NeonDataProvider as DataProvider, useNeonData as useData } from './NeonDataContext';
-export type { AppData } from '../hooks/useNeonDataStore';
+// Main Data Context - Switching to Supabase for Realtime support
+export { SupabaseDataProvider as DataProvider, useSupabaseData as useData } from './SupabaseDataContext';
+export type { AppData } from '../hooks/useSupabaseDataStore';

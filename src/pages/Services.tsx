@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { Service } from '../types';
 import { 

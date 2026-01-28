@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import NotFound from './NotFound';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { ArticleContent, ArticleComment, Article } from '../types';
 import { ChevronLeftIcon, UserCircleIcon, EyeIcon, HandThumbUpIcon, HandThumbDownIcon, ShareIcon, XMarkIcon, CheckIcon, ClipboardDocumentIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
@@ -99,15 +99,15 @@ const ShareModal: React.FC<{
                     ) : (
                         <>
                             <div className="flex items-center gap-2">
-                                <input type="text" readOnly value={url} className="admin-input flex-grow !pr-10" />
-                                <button onClick={handleCopy} className="relative -ml-10 text-pm-off-white/70 hover:text-pm-gold">
+                                <input type="text" readOnly value={url} className="admin-input flex-grow !pr-10" title="Lien de partage" aria-label="Lien de partage de l'article" />
+                                <button onClick={handleCopy} className="relative -ml-10 text-pm-off-white/70 hover:text-pm-gold" title="Copier le lien" aria-label="Copier le lien de partage">
                                     {copied ? <CheckIcon className="w-5 h-5 text-green-500" /> : <ClipboardDocumentIcon className="w-5 h-5" />}
                                 </button>
                             </div>
                             <div className="flex justify-center gap-4 pt-2">
-                                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold"><FacebookIcon className="w-10 h-10" /></a>
-                                <a href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${shareText}`} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold"><TwitterIcon className="w-10 h-10 bg-white rounded-full p-1" /></a>
-                                <a href={`https://api.whatsapp.com/send?text=${shareText}%20${encodedUrl}`} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold"><WhatsAppIcon className="w-10 h-10" /></a>
+                                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold" title="Partager sur Facebook" aria-label="Partager cet article sur Facebook"><FacebookIcon className="w-10 h-10" /></a>
+                                <a href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${shareText}`} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold" title="Partager sur Twitter" aria-label="Partager cet article sur Twitter"><TwitterIcon className="w-10 h-10 bg-white rounded-full p-1" /></a>
+                                <a href={`https://api.whatsapp.com/send?text=${shareText}%20${encodedUrl}`} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold" title="Partager sur WhatsApp" aria-label="Partager cet article sur WhatsApp"><WhatsAppIcon className="w-10 h-10" /></a>
                             </div>
                         </>
                     )}
@@ -348,8 +348,8 @@ const ArticleDetail: React.FC = () => {
             <div className="prose prose-invert prose-lg max-w-none text-pm-off-white/80">{safeContent.map((contentBlock, index) => <div key={index}>{renderContent(contentBlock)}</div>)}</div>
             <div className="mt-12 pt-6 border-t border-pm-gold/20 flex flex-col sm:flex-row justify-between items-center gap-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => handleReaction('like')} disabled={!!userReaction} aria-pressed={userReaction === 'like'} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${userReaction === 'like' ? 'bg-pm-gold text-pm-dark border-pm-gold' : 'border-pm-off-white/50 hover:bg-pm-dark'}`}><HandThumbUpIcon className="w-5 h-5" /> J'aime ({article.reactions?.likes || 0})</button>
-                    <button onClick={() => handleReaction('dislike')} disabled={!!userReaction} aria-pressed={userReaction === 'dislike'} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${userReaction === 'dislike' ? 'bg-pm-gold text-pm-dark border-pm-gold' : 'border-pm-off-white/50 hover:bg-pm-dark'}`}><HandThumbDownIcon className="w-5 h-5" /> Je n'aime pas ({article.reactions?.dislikes || 0})</button>
+                    <button onClick={() => handleReaction('like')} disabled={!!userReaction} aria-pressed={userReaction === 'like' ? "true" : "false"} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${userReaction === 'like' ? 'bg-pm-gold text-pm-dark border-pm-gold' : 'border-pm-off-white/50 hover:bg-pm-dark'}`}><HandThumbUpIcon className="w-5 h-5" /> J'aime ({article.reactions?.likes || 0})</button>
+                    <button onClick={() => handleReaction('dislike')} disabled={!!userReaction} aria-pressed={userReaction === 'dislike' ? "true" : "false"} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-colors disabled:opacity-70 disabled:cursor-not-allowed ${userReaction === 'dislike' ? 'bg-pm-gold text-pm-dark border-pm-gold' : 'border-pm-off-white/50 hover:bg-pm-dark'}`}><HandThumbDownIcon className="w-5 h-5" /> Je n'aime pas ({article.reactions?.dislikes || 0})</button>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap justify-center">
                     <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border transition-colors border-pm-off-white/50 hover:bg-pm-dark"><ShareIcon className="w-5 h-5" /> Partager</button>

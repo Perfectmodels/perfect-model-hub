@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/SEO';
-import TestimonialCarousel from '../components/TestimonialCarousel';
+import SEO from '../components/components/SEO';
+import TestimonialCarousel from "../components/components/TestimonialCarousel";
 import { useData } from '../contexts/DataContext';
-import ModelCard from '../components/ModelCard';
-import ServiceCard from '../components/ServiceCard';
+import ModelCard from "../components/components/ModelCard";
+import ServiceCard from "../components/components/ServiceCard";
 
 const Home: React.FC = () => {
   const { data, isInitialized } = useData();

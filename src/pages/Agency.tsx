@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckBadgeIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { AchievementCategory, ModelDistinction, FAQCategory } from '../types';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
-import TestimonialCarousel from '../components/TestimonialCarousel';
+import TestimonialCarousel from "../components/components/TestimonialCarousel";
 
 const FAQ: React.FC<{ faqData: FAQCategory[] }> = ({ faqData }) => {
     const [openFAQ, setOpenFAQ] = useState<string | null>('0-0'); // Open the first question by default

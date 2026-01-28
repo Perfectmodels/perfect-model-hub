@@ -1,10 +1,11 @@
 
 
 import React, { useState } from 'react';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { FashionDayApplication, FashionDayApplicationRole } from '../types';
 import { Link } from 'react-router-dom';
+import { supabase } from '../utils/supabase';
 
 const FashionDayApplicationForm: React.FC = () => {
     const { data, saveData } = useData();
@@ -48,6 +49,21 @@ const FashionDayApplicationForm: React.FC = () => {
         try {
             const updatedApplications = [...(data.fashionDayApplications || []), newApplication];
             await saveData({ ...data, fashionDayApplications: updatedApplications });
+
+            // Send confirmation email via template
+            await supabase.functions.invoke('send-email', {
+                body: {
+                    to: formData.email,
+                    template: 'fashionDayApplication',
+                    data: {
+                        name: formData.name,
+                        role: formData.role,
+                        email: formData.email,
+                        phone: formData.phone,
+                        message: formData.message
+                    }
+                }
+            });
 
             setStatus('success');
             setStatusMessage('Votre candidature a été envoyée ! L\'équipe du Perfect Fashion Day vous recontactera prochainement.');

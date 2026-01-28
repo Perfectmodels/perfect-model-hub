@@ -1,10 +1,11 @@
 
 
 import React, { useState } from 'react';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { CastingApplication } from '../types';
 import { Link } from 'react-router-dom';
+import { supabase } from '../utils/supabase';
 
 const CastingForm: React.FC = () => {
     const { data, saveData } = useData();
@@ -40,6 +41,23 @@ const CastingForm: React.FC = () => {
         try {
             const updatedApplications = [...(data.castingApplications || []), newApplication];
             await saveData({ ...data, castingApplications: updatedApplications });
+
+            // Send confirmation email via template
+            await supabase.functions.invoke('send-email', {
+                body: {
+                    to: formData.email,
+                    template: 'castingApplication',
+                    data: {
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
+                        nationality: formData.nationality,
+                        height: formData.height,
+                        age: new Date().getFullYear() - new Date(formData.birthDate).getFullYear(),
+                        experience: formData.experience,
+                        instagram: formData.instagram
+                    }
+                }
+            });
 
             setStatus('success');
             setStatusMessage('Votre candidature a été envoyée avec succès ! Nous vous contacterons si votre profil est retenu.');

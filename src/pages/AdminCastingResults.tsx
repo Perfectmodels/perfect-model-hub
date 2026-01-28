@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { CastingApplication, CastingApplicationStatus, Model, JuryMember, JuryScore } from '../types';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, CheckBadgeIcon, XCircleIcon, ArrowPathIcon, PrinterIcon } from '@heroicons/react/24/outline';
-import PrintableCastingSheet from '../components/PrintableCastingSheet';
+import PrintableCastingSheet from "../components/components/PrintableCastingSheet";
 
 const AdminCastingResults: React.FC = () => {
     const { data, saveData } = useData();

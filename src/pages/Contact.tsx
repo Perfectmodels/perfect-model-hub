@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 // FIX: Corrected react-router-dom import statement to resolve module resolution errors.
 import { useLocation } from 'react-router-dom';
 import { MapPinIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { FacebookIcon, InstagramIcon, YoutubeIcon } from '../components/icons/SocialIcons';
-import BookingForm from '../components/BookingForm';
+import BookingForm from "../components/components/BookingForm";
 import { ContactMessage } from '../types';
 
 const Contact: React.FC = () => {
@@ -97,9 +97,9 @@ const Contact: React.FC = () => {
                             <h3 className="text-xl font-bold text-pm-off-white mb-4">Suivez-nous</h3>
                             {socialLinks && (
                                 <div className="flex space-x-6">
-                                    {socialLinks.facebook && <SocialLink href={socialLinks.facebook} icon={FacebookIcon} />}
-                                    {socialLinks.instagram && <SocialLink href={socialLinks.instagram} icon={InstagramIcon} />}
-                                    {socialLinks.youtube && <SocialLink href={socialLinks.youtube} icon={YoutubeIcon} />}
+                                    {socialLinks.facebook && <SocialLink href={socialLinks.facebook} icon={FacebookIcon} label="Facebook" />}
+                                    {socialLinks.instagram && <SocialLink href={socialLinks.instagram} icon={InstagramIcon} label="Instagram" />}
+                                    {socialLinks.youtube && <SocialLink href={socialLinks.youtube} icon={YoutubeIcon} label="YouTube" />}
                                 </div>
                             )}
                         </div>
@@ -151,8 +151,8 @@ const InfoItem: React.FC<{icon: React.ElementType, text: string, href?: string}>
     </div>
 );
 
-const SocialLink: React.FC<{ href: string, icon: React.ElementType }> = ({ href, icon: Icon }) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold transition-colors">
+const SocialLink: React.FC<{ href: string, icon: React.ElementType, label: string }> = ({ href, icon: Icon, label }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-pm-off-white/70 hover:text-pm-gold transition-colors" title={label} aria-label={label}>
         <Icon className="w-8 h-8" />
     </a>
 );

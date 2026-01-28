@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import NotFound from './NotFound';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { ChevronLeftIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { useData } from '../contexts/DataContext';
 

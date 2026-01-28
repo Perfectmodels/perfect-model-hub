@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { AppData } from '../hooks/useDataStore';
 import { Testimonial, Partner, FAQCategory, FAQItem, ApiKeys } from '../types';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, TrashIcon, PlusIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import ImageInput from '../components/icons/ImageInput';

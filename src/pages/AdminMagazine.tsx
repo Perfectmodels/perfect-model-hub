@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Article } from '../types';
-import SEO from '../components/SEO';
+import SEO from '../components/components/SEO';
 import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, TrashIcon, PencilIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon, StarIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import ImageUploader from '../components/ImageUploader';
-import ArticleGenerator from '../components/ArticleGenerator';
-import AIAssistant from '../components/AIAssistant';
-import ArticlePreview from '../components/ArticlePreview';
+import ImageUploader from "../components/components/ImageUploader";
+import ArticleGenerator from "../components/components/ArticleGenerator";
+import AIAssistant from "../components/components/AIAssistant";
+import ArticlePreview from "../components/components/ArticlePreview";
 import { FacebookIcon } from '../components/icons/SocialIcons';
 
 const AdminMagazine: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import ModelCard from '../components/ModelCard';
-import SEO from '../components/SEO';
+import ModelCard from "../components/components/ModelCard";
+import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 
 type GenderFilter = 'Tous' | 'Femme' | 'Homme';
@@ -28,7 +28,7 @@ const Models: React.FC = () => {
   const FilterButton: React.FC<{ gender: GenderFilter }> = ({ gender }) => (
     <button
       onClick={() => setFilter(gender)}
-      aria-pressed={filter === gender}
+      aria-pressed={filter === gender ? "true" : "false"}
       className={`px-6 py-2 text-sm uppercase tracking-widest rounded-full transition-all duration-300 transform hover:scale-105 ${filter === gender ? 'bg-pm-gold text-pm-dark shadow-md shadow-pm-gold/30' : 'bg-black border border-pm-gold text-pm-gold hover:bg-pm-gold hover:text-pm-dark'}`}
     >
       {gender}
