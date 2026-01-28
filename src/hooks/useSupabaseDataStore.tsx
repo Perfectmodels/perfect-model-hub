@@ -11,7 +11,23 @@ import {
 import { 
   contactInfo as initialContactInfo, 
   apiKeys as initialApiKeys, 
-  faqData as initialFaqData
+  faqData as initialFaqData,
+  siteConfig as initialSiteConfig,
+  navLinks as initialNavLinks,
+  socialLinks as initialSocialLinks,
+  agencyTimeline as initialTimeline,
+  agencyInfo as initialAgencyInfo,
+  modelDistinctions as initialDistinctions,
+  agencyServices as initialServices,
+  agencyAchievements as initialAchievements,
+  agencyPartners as initialPartners,
+  models as initialModels,
+  fashionDayEvents as initialEvents,
+  testimonials as initialTestimonials,
+  newsItems as initialNews,
+  siteImages as initialImages,
+  juryMembers as initialJury,
+  registrationStaff as initialStaff
 } from '../constants/data';
 import { courseData as initialCourseData } from '../constants/courseData';
 
@@ -115,6 +131,11 @@ export const useSupabaseDataStore = () => {
         supabase.from('recovery_requests').select('*').order('timestamp', { ascending: false })
       ]);
 
+      // Check for critical data. If missing, assume fetch failure (e.g. RLS or network or empty DB)
+      // and throw to trigger fallback.
+      if (modelsRes.error || !modelsRes.data) throw new Error('Failed to fetch models');
+      if (imagesRes.error || !imagesRes.data || imagesRes.data.length === 0) throw new Error('Failed to fetch site images');
+
       console.log('Fetched data from Supabase', { 
         pagesFound: (pagesRes.data || []).length,
         modelsFound: (modelsRes.data || []).length 
@@ -133,9 +154,6 @@ export const useSupabaseDataStore = () => {
       (imagesRes.data || []).forEach((img: any) => {
         siteImages[img.key] = img.url;
       });
-
-      // Simple mapping for pages content if needed
-      // const pages = pagesRes.data; 
 
       const appData: AppData = {
         models: (modelsRes.data || []).map(m => toCamelCase<Model>(m as any)),
@@ -175,8 +193,47 @@ export const useSupabaseDataStore = () => {
       setData(appData);
       setIsInitialized(true);
     } catch (err: any) {
-      console.error('Error fetching data from Supabase:', err);
-      setError(err.message);
+      console.warn('Error fetching data from Supabase, falling back to static data:', err);
+      // Fallback to static data
+      const fallbackData: AppData = {
+          siteConfig: initialSiteConfig,
+          navLinks: initialNavLinks,
+          socialLinks: initialSocialLinks,
+          agencyTimeline: initialTimeline,
+          agencyInfo: initialAgencyInfo,
+          modelDistinctions: initialDistinctions,
+          agencyServices: initialServices,
+          agencyAchievements: initialAchievements,
+          agencyPartners: initialPartners,
+          models: initialModels,
+          fashionDayEvents: initialEvents,
+          testimonials: initialTestimonials,
+          newsItems: initialNews,
+          contactInfo: initialContactInfo,
+          siteImages: initialImages,
+          apiKeys: initialApiKeys,
+          juryMembers: initialJury,
+          registrationStaff: initialStaff,
+          faqData: initialFaqData,
+          courseData: initialCourseData,
+
+          // Empty arrays for dynamic user data
+          articles: [],
+          castingApplications: [],
+          fashionDayApplications: [],
+          forumThreads: [],
+          forumReplies: [],
+          articleComments: [],
+          recoveryRequests: [],
+          bookingRequests: [],
+          contactMessages: [],
+          absences: [],
+          monthlyPayments: [],
+          photoshootBriefs: []
+      };
+
+      setData(fallbackData);
+      setError(null); // Clear error to allow rendering
       setIsInitialized(true);
     }
   }, []);
@@ -184,7 +241,6 @@ export const useSupabaseDataStore = () => {
   useEffect(() => {
     fetchData();
 
-    // Set up Realtime subscriptions
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -192,7 +248,7 @@ export const useSupabaseDataStore = () => {
         { event: '*', schema: 'public' },
         (payload: any) => {
           console.log('Realtime change received:', payload);
-          fetchData(); // Simplest way to ensure consistency: refetch everything
+          fetchData();
         }
       )
       .subscribe();

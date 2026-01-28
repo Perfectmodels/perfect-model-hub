@@ -4,8 +4,9 @@ import { LockClosedIcon, UserIcon, XMarkIcon, PhoneIcon, ArrowRightIcon } from '
 import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
 import { RecoveryRequest } from '../types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import PremiumButton from '../components/ui/PremiumButton';
 
 interface ActiveUser {
   name: string;
@@ -56,8 +57,6 @@ const Login: React.FC = () => {
         if (authError) throw authError;
 
         if (authData.user) {
-          // If successful, we still might need to set some legacy session items 
-          // to maintain compatibility with other parts of the app during migration
           const role = authData.user.app_metadata?.role || authData.user.user_metadata?.role || 'student';
           sessionStorage.setItem('classroom_access', 'granted');
           sessionStorage.setItem('classroom_role', role);
@@ -134,68 +133,106 @@ const Login: React.FC = () => {
 
   return (
     <>
-      <SEO title="Accès Privé" noIndex />
+      <SEO title="Accès Privé | Perfect Models Management" noIndex />
       <div 
-        className="bg-cover bg-center min-h-screen flex items-center justify-center p-4"
-        style={{ backgroundImage: `url(${data?.siteImages.castingBg})` }}
+        className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden"
       >
-        <div className="absolute inset-0 bg-pm-dark/80 backdrop-blur-sm"></div>
+        {/* Background */}
+        <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${data?.siteImages.castingBg})` }}
+        />
+        <div className="absolute inset-0 bg-pm-dark/80 backdrop-blur-sm" />
+
         <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative w-full max-w-sm"
+            transition={{ duration: 0.8 }}
+            className="relative z-10 w-full max-w-md"
         >
-          <div className="bg-black/50 border border-pm-gold/20 p-8 rounded-lg shadow-2xl shadow-black/50 text-center">
-            <Link to="/">
-                <img src={data?.siteConfig.logo} alt="Logo" className="h-20 w-auto mx-auto mb-6 bg-black rounded-full border-2 border-pm-gold p-1" />
-            </Link>
-            <h1 className="text-3xl font-playfair text-pm-gold mb-2">Accès Privé</h1>
-            <p className="text-pm-off-white/70 mb-8">
-              Bienvenue sur votre espace personnel.
-            </p>
+          <div className="bg-black/60 border border-pm-gold/20 p-8 md:p-10 rounded-2xl shadow-2xl backdrop-blur-md">
+            <div className="text-center mb-10">
+                <Link to="/" className="inline-block mb-6 transition-transform hover:scale-110">
+                    <img
+                        src={data?.siteConfig.logo}
+                        alt="PMM Logo"
+                        className="h-20 w-auto rounded-full border-2 border-pm-gold p-1 bg-black"
+                    />
+                </Link>
+                <h1 className="text-3xl font-playfair font-bold text-pm-gold mb-2">Espace Membre</h1>
+                <p className="text-gray-400 text-sm">
+                  Connectez-vous pour accéder à votre tableau de bord.
+                </p>
+            </div>
+
             <form onSubmit={handleLogin} className="space-y-6">
-                <div className="relative">
-                   <UserIcon className="h-5 w-5 text-pm-off-white/50 absolute top-1/2 left-4 transform -translate-y-1/2" />
-                   <input
-                     type="text" value={username} onChange={(e) => { setUsername(e.target.value); setError(''); }}
-                     placeholder="Identifiant ou Nom"
-                     className="w-full bg-pm-dark/70 border-2 border-pm-off-white/20 rounded-full py-3 px-12 focus:outline-none focus:border-pm-gold transition-colors"
-                     required
-                   />
+                <div className="space-y-4">
+                    <div className="relative group">
+                        <UserIcon className="h-5 w-5 text-gray-500 absolute top-1/2 left-4 transform -translate-y-1/2 group-focus-within:text-pm-gold transition-colors" />
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => { setUsername(e.target.value); setError(''); }}
+                            placeholder="Identifiant ou Email"
+                            className="w-full bg-black/40 border border-white/10 rounded-full py-4 pl-12 pr-6 text-white placeholder-gray-600 focus:outline-none focus:border-pm-gold focus:ring-1 focus:ring-pm-gold transition-all"
+                            required
+                        />
+                    </div>
+                    <div className="relative group">
+                        <LockClosedIcon className="h-5 w-5 text-gray-500 absolute top-1/2 left-4 transform -translate-y-1/2 group-focus-within:text-pm-gold transition-colors" />
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                            placeholder="Mot de passe"
+                            className="w-full bg-black/40 border border-white/10 rounded-full py-4 pl-12 pr-6 text-white placeholder-gray-600 focus:outline-none focus:border-pm-gold focus:ring-1 focus:ring-pm-gold transition-all"
+                            required
+                        />
+                    </div>
                 </div>
-                <div className="relative">
-                   <LockClosedIcon className="h-5 w-5 text-pm-off-white/50 absolute top-1/2 left-4 transform -translate-y-1/2" />
-                   <input
-                     type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                     placeholder="Mot de passe"
-                     className="w-full bg-pm-dark/70 border-2 border-pm-off-white/20 rounded-full py-3 px-12 focus:outline-none focus:border-pm-gold transition-colors"
-                     required
-                   />
-                </div>
-              {error && <p className="text-red-400 text-sm !mt-4">{error}</p>}
-              <button
-                type="submit" disabled={!isInitialized}
-                className="w-full group flex items-center justify-center gap-2 px-8 py-3 bg-pm-gold text-pm-dark font-bold uppercase tracking-widest rounded-full transition-all duration-300 hover:bg-white !mt-8 disabled:opacity-50"
-              >
-                <span>{isInitialized ? 'Connexion' : 'Chargement...'}</span>
-                <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
+
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 p-3 rounded-lg"
+                    >
+                        {error}
+                    </motion.div>
+                )}
+
+                <PremiumButton
+                    type="submit"
+                    disabled={!isInitialized}
+                    className="w-full"
+                    size="lg"
+                >
+                    {isInitialized ? 'Se connecter' : 'Chargement...'}
+                </PremiumButton>
             </form>
-            <div className="mt-6">
-              <button onClick={() => setIsRecoveryModalOpen(true)} className="text-xs text-pm-off-white/60 hover:text-pm-gold hover:underline">
-                Coordonnées oubliées ?
+
+            <div className="mt-8 text-center border-t border-white/10 pt-6">
+              <button
+                onClick={() => setIsRecoveryModalOpen(true)}
+                className="text-sm text-gray-500 hover:text-pm-gold transition-colors"
+              >
+                Mot de passe oublié ?
               </button>
             </div>
           </div>
         </motion.div>
       </div>
-      {isRecoveryModalOpen && <RecoveryModal onClose={() => setIsRecoveryModalOpen(false)} onSubmit={handleSubmitRecovery} />}
+
+      {/* Recovery Modal */}
+      <AnimatePresence>
+        {isRecoveryModalOpen && (
+            <RecoveryModal onClose={() => setIsRecoveryModalOpen(false)} onSubmit={handleSubmitRecovery} />
+        )}
+      </AnimatePresence>
     </>
   );
 };
 
-// ... RecoveryModal (pas de changement majeur nécessaire, mais on l'inclut pour la complétude)
 const RecoveryModal: React.FC<{onClose: () => void, onSubmit: (name: string, phone: string) => void}> = ({ onClose, onSubmit }) => {
   const [modelName, setModelName] = useState('');
   const [phone, setPhone] = useState('');
@@ -206,40 +243,58 @@ const RecoveryModal: React.FC<{onClose: () => void, onSubmit: (name: string, pho
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="bg-pm-dark border border-pm-gold/30 rounded-lg shadow-2xl w-full max-w-md">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-playfair text-pm-gold">Demande de Coordonnées</h2>
-            <button onClick={onClose} className="text-pm-off-white/70 hover:text-white">
+    <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-pm-dark border border-pm-gold/30 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
+        <div className="p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-playfair font-bold text-pm-gold">Récupération de Compte</h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
               <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
-          <p className="text-sm text-pm-off-white/70 mb-6">
-            Entrez votre nom de mannequin et votre numéro de téléphone. L'administrateur vous contactera pour vous fournir vos accès.
+          <p className="text-sm text-gray-300 mb-8 leading-relaxed">
+            Veuillez renseigner votre nom et votre numéro de téléphone. Notre équipe vous contactera pour réinitialiser vos accès.
           </p>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="modelName" className="sr-only">Nom de mannequin</label>
-              <div className="relative">
-                <UserIcon className="h-5 w-5 text-pm-off-white/50 absolute top-1/2 left-4 transform -translate-y-1/2" />
-                <input id="modelName" type="text" value={modelName} onChange={e => setModelName(e.target.value)} placeholder="Votre nom complet" className="admin-input pl-12" required />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="relative group">
+                <UserIcon className="h-5 w-5 text-gray-500 absolute top-1/2 left-4 transform -translate-y-1/2 group-focus-within:text-pm-gold transition-colors" />
+                <input
+                    type="text"
+                    value={modelName}
+                    onChange={e => setModelName(e.target.value)}
+                    placeholder="Votre nom complet"
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 pl-12 pr-4 text-white focus:border-pm-gold focus:outline-none transition-colors"
+                    required
+                />
             </div>
-            <div>
-              <label htmlFor="phone" className="sr-only">Numéro de téléphone</label>
-              <div className="relative">
-                <PhoneIcon className="h-5 w-5 text-pm-off-white/50 absolute top-1/2 left-4 transform -translate-y-1/2" />
-                <input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Votre numéro de téléphone" className="admin-input pl-12" required />
-              </div>
+            <div className="relative group">
+                <PhoneIcon className="h-5 w-5 text-gray-500 absolute top-1/2 left-4 transform -translate-y-1/2 group-focus-within:text-pm-gold transition-colors" />
+                <input
+                    type="tel"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="Votre numéro de téléphone"
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 pl-12 pr-4 text-white focus:border-pm-gold focus:outline-none transition-colors"
+                    required
+                />
             </div>
-            <button type="submit" className="w-full px-8 py-3 bg-pm-gold text-pm-dark font-bold uppercase tracking-widest rounded-full transition-all duration-300 hover:bg-white mt-4">
+            <PremiumButton type="submit" className="w-full mt-4">
               Envoyer la demande
-            </button>
+            </PremiumButton>
           </form>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
