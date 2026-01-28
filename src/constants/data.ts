@@ -41,10 +41,10 @@ export const siteImages: SiteImages = {
 
 export const apiKeys: ApiKeys = {
     resendApiKey: import.meta.env.VITE_RESEND_API_KEY || '',
-    formspreeEndpoint: import.meta.env.VITE_FORMSPREE_ENDPOINT || 'https://formspree.io/f/xovnyqnz',
+    formspreeEndpoint: import.meta.env.VITE_FORMSPREE_ENDPOINT || '',
     firebaseDynamicLinks: {
         webApiKey: import.meta.env.VITE_FIREBASE_WEB_API_KEY || '',
-        domainUriPrefix: import.meta.env.VITE_FIREBASE_DYNAMIC_LINKS_PREFIX || 'https://perfectmodels.page.link'
+        domainUriPrefix: import.meta.env.VITE_FIREBASE_DYNAMIC_LINKS_PREFIX || ''
     },
     imgbbApiKey: import.meta.env.VITE_IMGBB_API_KEY || '',
     brevoApiKey: import.meta.env.VITE_BREVO_API_KEY || '',
