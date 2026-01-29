@@ -1,11 +1,12 @@
-
 import React from 'react';
-// FIX: Corrected react-router-dom import statement to resolve module resolution errors.
-import { Link } from 'react-router-dom';
 import CountdownTimer from "../components/components/CountdownTimer";
-import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, ClockIcon, MapPinIcon, CheckCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import SEO from '../components/components/SEO';
 import { useData } from '../contexts/DataContext';
+import PageHeader from '../components/ui/PageHeader';
+import Section from '../components/ui/Section';
+import PremiumButton from '../components/ui/PremiumButton';
+import PremiumCard from '../components/ui/PremiumCard';
 
 const Casting: React.FC = () => {
   const { data, isInitialized } = useData();
@@ -16,7 +17,6 @@ const Casting: React.FC = () => {
   }
   
   const { siteImages } = data;
-  const posterUrl = siteImages.castingBg;
 
   const conditionsFilles = [
     "Âge : 16 à 28 ans",
@@ -40,109 +40,115 @@ const Casting: React.FC = () => {
   return (
     <div className="bg-pm-dark text-pm-off-white">
       <SEO 
-        title="Grand Casting National | Devenez Mannequin PMM"
-        description="Saisissez votre chance ! Participez au grand casting national de Perfect Models Management pour devenir notre prochain visage. Découvrez les dates, lieux et conditions pour lancer votre carrière."
-        keywords="casting mannequin gabon 2025, devenir mannequin libreville, casting pmm, agence de casting gabon, comment devenir mannequin"
-        image={posterUrl}
+        title="Grand Casting National | Devenez Mannequin"
+        description="Saisissez votre chance ! Participez au grand casting national de Perfect Models Management."
+        image={siteImages.castingBg}
       />
-      {/* Hero Section */}
-      <section 
-        className="relative min-h-[70vh] flex items-center justify-center text-center bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('${posterUrl}')` }}
-        aria-labelledby="casting-title"
-      >
-        <div className="absolute inset-0 bg-pm-dark/80 backdrop-blur-sm"></div>
-        <div className="relative z-10 p-6">
-          <h1 id="casting-title" className="text-4xl md:text-6xl font-playfair text-pm-gold font-extrabold" style={{ textShadow: '0 0 15px rgba(212, 175, 55, 0.7)' }}>
-            Grand Casting National 2025
-          </h1>
-          <p className="mt-4 text-lg md:text-xl text-pm-off-white/90 max-w-2xl mx-auto">
-            Perfect Models Management recherche ses nouveaux visages. Saisissez votre chance de rejoindre l'élite de la mode.
-          </p>
-        </div>
-      </section>
 
-      <div className="container mx-auto px-6 py-20">
-        <div className="space-y-20">
-            {/* Event Info Section */}
-            <section aria-label="Informations sur le casting" className="bg-black p-8 border border-pm-gold/20 -mt-40 relative z-20 max-w-5xl mx-auto shadow-2xl shadow-pm-gold/10">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                    <InfoItem icon={CalendarDaysIcon} title="Date" content="Samedi 6 Sept. 2025" />
-                    <InfoItem icon={ClockIcon} title="Heure" content="14h00" />
-                    <InfoItem icon={MapPinIcon} title="Lieu" content="Complexe Eli, Ancien Sobraga" />
-                </div>
-            </section>
-            
-            {/* Countdown Timer Section */}
-            <section aria-labelledby="countdown-title" className="text-center">
-                <h2 id="countdown-title" className="text-2xl font-playfair text-pm-gold mb-6">Le casting commence dans...</h2>
-                <CountdownTimer targetDate={castingDate} />
-            </section>
+      <PageHeader
+        title="Grand Casting National"
+        subtitle="Votre carrière commence ici. Rejoignez l'élite."
+        bgImage={siteImages.castingBg}
+      />
 
-            {/* Details Section */}
-            <section aria-labelledby="details-title" className="max-w-5xl mx-auto">
-                <h2 id="details-title" className="text-4xl font-playfair text-pm-gold text-center mb-12">Modalités de Participation</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    {/* Conditions */}
-                    <div className="bg-black p-8 border border-pm-gold/10">
-                        <h3 className="text-2xl font-playfair text-pm-gold mb-6">Conditions de Participation</h3>
-                        <div className="space-y-6">
-                            <div>
-                                <h4 className="font-bold text-lg text-pm-off-white mb-3">Pour les Filles :</h4>
-                                <ul className="space-y-2 text-pm-off-white/80">
-                                    {conditionsFilles.map((item, index) => <li key={index} className="flex items-center gap-3"><CheckCircleIcon className="w-5 h-5 text-pm-gold"/>{item}</li>)}
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-lg text-pm-off-white mb-3">Pour les Garçons :</h4>
-                                <ul className="space-y-2 text-pm-off-white/80">
-                                    {conditionsGarcons.map((item, index) => <li key={index} className="flex items-center gap-3"><CheckCircleIcon className="w-5 h-5 text-pm-gold"/>{item}</li>)}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Dress Code */}
-                    <div className="bg-black p-8 border border-pm-gold/10">
-                        <h3 className="text-2xl font-playfair text-pm-gold mb-6">Tenue Exigée</h3>
-                        <p className="text-pm-off-white/80 mb-4">
-                            Veuillez vous présenter avec la tenue suivante pour garantir une évaluation optimale :
-                        </p>
-                        <ul className="space-y-2 text-pm-off-white/80">
-                           {dressCode.map((item, index) => <li key={index} className="flex items-center gap-3"><CheckCircleIcon className="w-5 h-5 text-pm-gold"/>{item}</li>)}
-                        </ul>
-                         <p className="mt-6 text-sm text-pm-gold/80 italic">
-                           Le non-respect de la tenue peut être un motif d'élimination.
-                        </p>
-                    </div>
-                </div>
-            </section>
-            
-            {/* CTA Section */}
-            <section aria-labelledby="application-title">
-              <div className="max-w-3xl mx-auto bg-pm-gold text-pm-dark p-8 text-center shadow-lg shadow-pm-gold/30">
-                <h2 id="application-title" className="text-4xl font-playfair font-bold mb-4">Prêt(e) à défiler ?</h2>
-                <p className="text-lg mb-6">Ne manquez pas cette opportunité unique. Soumettez votre candidature en ligne pour pré-valider votre participation.</p>
-                <Link to="/casting-formulaire" className="inline-block px-10 py-4 bg-pm-dark text-pm-gold font-bold uppercase tracking-widest transition-transform duration-300 hover:scale-105">
-                    Postuler en Ligne
-                </Link>
+      <Section dark className="-mt-32 relative z-20 pt-0">
+          {/* Key Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+             <InfoCard icon={CalendarDaysIcon} title="Date" content="Samedi 6 Sept. 2025" />
+             <InfoCard icon={ClockIcon} title="Heure" content="14h00 Précises" />
+             <InfoCard icon={MapPinIcon} title="Lieu" content="Complexe Eli, Ancien Sobraga" />
+          </div>
+
+          {/* Countdown */}
+          <div className="text-center mb-24">
+              <h2 className="text-sm font-bold text-pm-gold uppercase tracking-widest mb-8">Le temps presse</h2>
+              <div className="inline-block p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                 <CountdownTimer targetDate={castingDate} />
               </div>
-            </section>
-        </div>
-      </div>
+          </div>
+
+          {/* Conditions & Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto mb-24">
+              <PremiumCard className="p-10 h-full">
+                  <div className="flex items-center gap-4 mb-8">
+                      <div className="p-3 bg-pm-gold/20 rounded-full text-pm-gold"><CheckCircleIcon className="w-8 h-8" /></div>
+                      <h3 className="text-2xl font-playfair font-bold text-white">Conditions</h3>
+                  </div>
+
+                  <div className="space-y-8">
+                      <div>
+                          <h4 className="font-bold text-pm-gold uppercase tracking-wider text-sm mb-4 border-b border-white/10 pb-2">Pour les Filles</h4>
+                          <ul className="space-y-3">
+                              {conditionsFilles.map((item, i) => (
+                                  <li key={i} className="flex items-start gap-3 text-gray-300">
+                                      <span className="text-pm-gold mt-1">•</span>
+                                      {item}
+                                  </li>
+                              ))}
+                          </ul>
+                      </div>
+                      <div>
+                          <h4 className="font-bold text-pm-gold uppercase tracking-wider text-sm mb-4 border-b border-white/10 pb-2">Pour les Garçons</h4>
+                          <ul className="space-y-3">
+                              {conditionsGarcons.map((item, i) => (
+                                  <li key={i} className="flex items-start gap-3 text-gray-300">
+                                      <span className="text-pm-gold mt-1">•</span>
+                                      {item}
+                                  </li>
+                              ))}
+                          </ul>
+                      </div>
+                  </div>
+              </PremiumCard>
+
+              <PremiumCard className="p-10 h-full">
+                  <div className="flex items-center gap-4 mb-8">
+                      <div className="p-3 bg-pm-gold/20 rounded-full text-pm-gold"><SparklesIcon className="w-8 h-8" /></div>
+                      <h3 className="text-2xl font-playfair font-bold text-white">Tenue & Attitude</h3>
+                  </div>
+
+                  <div className="mb-8">
+                      <h4 className="font-bold text-pm-gold uppercase tracking-wider text-sm mb-4 border-b border-white/10 pb-2">Dress Code Strict</h4>
+                      <ul className="space-y-3">
+                          {dressCode.map((item, i) => (
+                              <li key={i} className="flex items-start gap-3 text-gray-300">
+                                  <span className="text-pm-gold mt-1">•</span>
+                                  {item}
+                              </li>
+                          ))}
+                      </ul>
+                  </div>
+
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6">
+                      <p className="text-red-300 text-sm italic">
+                          "Le respect de la tenue est impératif. Tout candidat ne respectant pas ces consignes ne sera pas auditionné."
+                      </p>
+                  </div>
+              </PremiumCard>
+          </div>
+
+          {/* Final CTA */}
+          <div className="text-center max-w-3xl mx-auto">
+              <PremiumCard className="p-12 border-pm-gold/30">
+                  <h2 className="text-4xl font-playfair font-bold text-white mb-6">Ne manquez pas votre chance</h2>
+                  <p className="text-gray-300 mb-10 text-lg">
+                      La pré-inscription en ligne est fortement recommandée pour gagner du temps le jour J.
+                  </p>
+                  <PremiumButton to="/casting-formulaire" variant="primary" size="lg" className="w-full sm:w-auto shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+                      S'inscrire au Casting
+                  </PremiumButton>
+              </PremiumCard>
+          </div>
+      </Section>
     </div>
   );
 };
 
-interface InfoItemProps {
-    icon: React.ElementType;
-    title: string;
-    content: string;
-}
-const InfoItem: React.FC<InfoItemProps> = ({ icon: Icon, title, content }) => (
-    <div className="flex flex-col items-center">
-        <Icon className="w-10 h-10 text-pm-gold mb-3" aria-hidden="true" />
-        <h3 className="font-bold text-lg uppercase tracking-wider text-pm-off-white/80">{title}</h3>
-        <p className="text-pm-off-white">{content}</p>
+const InfoCard: React.FC<{ icon: React.ElementType, title: string, content: string }> = ({ icon: Icon, title, content }) => (
+    <div className="bg-pm-dark border border-pm-gold/20 rounded-xl p-6 flex flex-col items-center text-center shadow-2xl">
+        <Icon className="w-10 h-10 text-pm-gold mb-4" />
+        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{title}</h4>
+        <p className="text-lg text-white font-bold font-playfair">{content}</p>
     </div>
 );
 
