@@ -1,6 +1,6 @@
 
 // FIX: Removed BeginnerStudent from import as the type is deprecated.
-import { Model, Service, AchievementCategory, ModelDistinction, Testimonial, ContactInfo, SiteImages, Partner, ApiKeys, CastingApplication, FashionDayApplication, NewsItem, FashionDayEvent, ForumThread, ForumReply, ArticleComment, RecoveryRequest, JuryMember, RegistrationStaff, BookingRequest, ContactMessage, SocialLinks, Artist, FAQCategory, Absence, MonthlyPayment, PhotoshootBrief, NavLink } from '../../types';
+import { Model, Service, AchievementCategory, ModelDistinction, Testimonial, ContactInfo, SiteImages, Partner, ApiKeys, CastingApplication, FashionDayApplication, NewsItem, FashionDayEvent, ForumThread, ForumReply, ArticleComment, RecoveryRequest, JuryMember, RegistrationStaff, BookingRequest, ContactMessage, SocialLinks, FAQCategory, Absence, MonthlyPayment, PhotoshootBrief, NavLink } from '../../types';
 
 export const siteConfig = {
   logo: 'https://i.ibb.co/fVBxPNTP/T-shirt.png',
@@ -41,12 +41,11 @@ export const siteImages: SiteImages = {
 
 export const apiKeys: ApiKeys = {
     resendApiKey: import.meta.env.VITE_RESEND_API_KEY || '',
-    formspreeEndpoint: import.meta.env.VITE_FORMSPREE_ENDPOINT || '',
+    formspreeEndpoint: import.meta.env.VITE_FORMSPREE_ENDPOINT || 'https://formspree.io/f/xovnyqnz',
     firebaseDynamicLinks: {
         webApiKey: import.meta.env.VITE_FIREBASE_WEB_API_KEY || '',
-        domainUriPrefix: import.meta.env.VITE_FIREBASE_DYNAMIC_LINKS_PREFIX || ''
+        domainUriPrefix: import.meta.env.VITE_FIREBASE_DYNAMIC_LINKS_PREFIX || 'https://perfectmodels.page.link'
     },
-    imgbbApiKey: import.meta.env.VITE_IMGBB_API_KEY || '',
     brevoApiKey: import.meta.env.VITE_BREVO_API_KEY || '',
 };
 

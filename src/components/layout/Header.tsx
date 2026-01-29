@@ -52,14 +52,17 @@ const Header: React.FC = () => {
             <nav className="container mx-auto px-6 py-4" aria-label="Global">
                 <div className="flex items-center justify-between">
                     <div className="flex lg:flex-1">
-                        <Link to="/" className="-m-1.5 p-1.5 flex items-center gap-2 group">
-                            <span className="sr-only">{siteConfig?.siteName || 'Perfect Models'}</span>
-                            <img 
-                                className="h-10 w-auto transition-transform duration-300 group-hover:scale-105" 
-                                src={siteConfig?.logoUrl || "https://i.ibb.co/fVBxPNTP/T-shirt.png"} 
-                                alt="" 
-                            />
-                            <span className="font-playfair font-bold text-xl text-pm-gold hidden sm:block">
+                        <Link to="/" className="-m-1.5 p-1.5 flex items-center gap-3 group">
+                            <span className="sr-only">{(siteConfig as any)?.siteName || 'Perfect Models'}</span>
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-pm-gold/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
+                                <img 
+                                    className="relative h-12 w-12 rounded-full object-cover border-2 border-pm-gold/50 shadow-lg shadow-black/50 transition-all duration-300 group-hover:scale-105 group-hover:border-pm-gold group-hover:shadow-pm-gold/30" 
+                                    src="/site-preview-logo.jpg" 
+                                    alt="Perfect Model Management Logo" 
+                                />
+                            </div>
+                            <span className="font-playfair font-bold text-xl text-pm-gold hidden sm:block tracking-wide group-hover:text-white transition-colors duration-300">
                                 Perfect Models
                             </span>
                         </Link>

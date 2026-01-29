@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export interface Model {
   id: string;
@@ -43,12 +43,6 @@ export interface Stylist {
   images: string[];
 }
 
-export interface Artist {
-  name: string;
-  description: string;
-  images: string[];
-}
-
 export interface FashionDayEvent {
   edition: number;
   date: string;
@@ -58,7 +52,7 @@ export interface FashionDayEvent {
   promoter?: string;
   stylists?: Stylist[];
   featuredModels?: string[];
-  artists?: Artist[];
+  artists?: Stylist[]; // Reusing Stylist or creating a temporary generic if exact structure match needed, but Artist was identical to Stylist
   partners?: { type: string; name: string }[];
   description: string;
 }
@@ -181,7 +175,6 @@ export interface ApiKeys {
     webApiKey?: string;
     domainUriPrefix: string;
   };
-  imgbbApiKey?: string;
   brevoApiKey?: string;
 }
 

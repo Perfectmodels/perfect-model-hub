@@ -1,4 +1,4 @@
-project_id = "licvqqepfsgqmxzxfspv"
+project_id = "enfofpjniinvrqyaqnty"
 [functions.process-image]
 enabled = true
 verify_jwt = true

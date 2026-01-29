@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { AppData } from '../hooks/useDataStore';
-import { Testimonial, Partner, FAQCategory, FAQItem, ApiKeys } from '../types';
+import { Testimonial, Partner, FAQCategory, FAQItem } from '../types';
 import SEO from '../components/components/SEO';
 import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, TrashIcon, PlusIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import ImageInput from '../components/icons/ImageInput';
+import ImageUploader from '../components/components/ImageUploader';
 
 // FIX: Removed beginner-related data types from the editable data definition.
 type EditableData = Pick<AppData, 'contactInfo' | 'siteConfig' | 'siteImages' | 'socialLinks' | 'agencyPartners' | 'testimonials' | 'faqData' | 'apiKeys'>;
@@ -35,7 +35,7 @@ const AdminSettings: React.FC = () => {
         alert("Changements enregistrés avec succès dans la base de données.");
     };
 
-    const handleSimpleChange = (section: keyof EditableData, key: string, value: any) => {
+    const handleSimpleChange = (section: keyof EditableData, key: string, value: string | undefined | null) => {
         if (!localData) return;
         setLocalData(prev => {
             if (!prev) return null;
@@ -53,6 +53,17 @@ const AdminSettings: React.FC = () => {
         });
     };
     
+    const handleImageChange = (section: keyof EditableData, key: string, value: string) => {
+        if (!localData || !data) return;
+        
+        // Update local state and save globally
+        const updatedSection = { ...(localData[section] as any), [key]: value };
+        const updatedLocalData = { ...localData, [section]: updatedSection };
+        
+        setLocalData(updatedLocalData);
+        saveData({ ...data, ...updatedLocalData });
+    };
+
     if (!localData || !data) {
         return <div className="min-h-screen flex items-center justify-center text-pm-gold">Chargement des paramètres...</div>;
     }
@@ -90,20 +101,19 @@ const AdminSettings: React.FC = () => {
                         <h2 className="admin-section-title">Clés API</h2>
                         <div className="space-y-4">
                             <FormInput label="Clé API Brevo (pour les emails)" value={localData.apiKeys.brevoApiKey || ''} onChange={e => handleSimpleChange('apiKeys', 'brevoApiKey', e.target.value)} />
-                            <FormInput label="Clé API ImgBB (pour les images)" value={localData.apiKeys.imgbbApiKey || ''} onChange={e => handleSimpleChange('apiKeys', 'imgbbApiKey', e.target.value)} />
                         </div>
                     </div>
 
                     <div className="admin-section-wrapper">
                         <h2 className="admin-section-title">Images du Site</h2>
                         <div className="space-y-4">
-                            <ImageInput label="Logo" value={localData.siteConfig.logo} onChange={value => handleSimpleChange('siteConfig', 'logo', value)} />
-                            <ImageInput label="Image Héros (Accueil)" value={localData.siteImages.hero} onChange={value => handleSimpleChange('siteImages', 'hero', value)} />
-                            <ImageInput label="Image 'À Propos' (Accueil)" value={localData.siteImages.about} onChange={value => handleSimpleChange('siteImages', 'about', value)} />
-                            <ImageInput label="Fond 'Fashion Day' (Accueil)" value={localData.siteImages.fashionDayBg} onChange={value => handleSimpleChange('siteImages', 'fashionDayBg', value)} />
-                            <ImageInput label="Image 'Notre Histoire' (Agence)" value={localData.siteImages.agencyHistory} onChange={value => handleSimpleChange('siteImages', 'agencyHistory', value)} />
-                            <ImageInput label="Fond 'Classroom'" value={localData.siteImages.classroomBg} onChange={value => handleSimpleChange('siteImages', 'classroomBg', value)} />
-                            <ImageInput label="Affiche 'Casting'" value={localData.siteImages.castingBg} onChange={value => handleSimpleChange('siteImages', 'castingBg', value)} />
+                            <ImageUploader label="Logo" value={localData.siteConfig.logo} onChange={value => handleImageChange('siteConfig', 'logo', value)} folder="site" />
+                            <ImageUploader label="Image Héros (Accueil)" value={localData.siteImages.hero} onChange={value => handleImageChange('siteImages', 'hero', value)} folder="site" />
+                            <ImageUploader label="Image 'À Propos' (Accueil)" value={localData.siteImages.about} onChange={value => handleImageChange('siteImages', 'about', value)} folder="site" />
+                            <ImageUploader label="Fond 'Fashion Day' (Accueil)" value={localData.siteImages.fashionDayBg} onChange={value => handleImageChange('siteImages', 'fashionDayBg', value)} folder="site" />
+                            <ImageUploader label="Image 'Notre Histoire' (Agence)" value={localData.siteImages.agencyHistory} onChange={value => handleImageChange('siteImages', 'agencyHistory', value)} folder="site" />
+                            <ImageUploader label="Fond 'Classroom'" value={localData.siteImages.classroomBg} onChange={value => handleImageChange('siteImages', 'classroomBg', value)} folder="site" />
+                            <ImageUploader label="Affiche 'Casting'" value={localData.siteImages.castingBg} onChange={value => handleImageChange('siteImages', 'castingBg', value)} folder="site" />
                         </div>
                     </div>
                     
@@ -127,7 +137,7 @@ const AdminSettings: React.FC = () => {
                                         <FormInput label="Nom du partenaire" value={item.name} onChange={e => onChange('name', e.target.value)} />
                                     </>
                                 )}
-                                getNewItem={() => ({ name: 'Nouveau Partenaire' })}
+                                getNewItem={() => ({ id: crypto.randomUUID(), name: 'Nouveau Partenaire' })}
                                 getItemTitle={item => item.name}
                             />
                         </div>
@@ -139,11 +149,17 @@ const AdminSettings: React.FC = () => {
                             <ArrayEditor 
                                 items={localData.testimonials}
                                 setItems={newItems => setLocalData(p => ({...p!, testimonials: newItems}))}
+                                onSave={newItems => {
+                                    if (!localData || !data) return;
+                                    const updatedLocalData = { ...localData, testimonials: newItems };
+                                    setLocalData(updatedLocalData);
+                                    saveData({ ...data, ...updatedLocalData });
+                                }}
                                 renderItem={(item: Testimonial, onChange) => (
                                     <>
                                         <FormInput label="Nom" value={item.name} onChange={e => onChange('name', e.target.value)} />
                                         <FormInput label="Rôle" value={item.role} onChange={e => onChange('role', e.target.value)} />
-                                        <ImageInput label="Photo" value={item.imageUrl} onChange={value => onChange('imageUrl', value)} />
+                                        <ImageUploader label="Photo" value={item.imageUrl} onChange={value => onChange('imageUrl', value, true)} folder="testimonials" />
                                         <FormTextArea 
                                             label="Citation" 
                                             value={item.quote} 
@@ -151,7 +167,7 @@ const AdminSettings: React.FC = () => {
                                         />
                                     </>
                                 )}
-                                getNewItem={() => ({ name: 'Nouveau Témoin', role: 'Rôle', quote: '', imageUrl: ''})}
+                                getNewItem={() => ({ id: crypto.randomUUID(), name: 'Nouveau Témoin', role: 'Rôle', quote: '', imageUrl: ''})}
                                 getItemTitle={item => item.name}
                             />
                         </div>
@@ -168,10 +184,10 @@ const AdminSettings: React.FC = () => {
                                     <SubArrayEditor
                                         title="Questions"
                                         items={item.items || []}
-                                        setItems={newItems => onChange('items', newItems)}
+                                        setItems={(newItems: FAQItem[]) => onChange('items', newItems)}
                                         getNewItem={() => ({ question: 'Nouvelle Question ?', answer: 'Réponse...' })}
-                                        getItemTitle={item => item.question}
-                                        renderItem={(faq: FAQItem, onFaqChange) => (
+                                        getItemTitle={(item: FAQItem) => item.question}
+                                        renderItem={(faq: FAQItem, onFaqChange: (key: any, value: any) => void) => (
                                             <>
                                                 <FormInput label="Question" value={faq.question} onChange={e => onFaqChange('question', e.target.value)} />
                                                 <FormTextArea label="Réponse" value={faq.answer} onChange={e => onFaqChange('answer', e.target.value)} />
@@ -191,34 +207,40 @@ const AdminSettings: React.FC = () => {
     );
 };
 
-const FormInput: React.FC<{label: string, value: any, onChange: any}> = ({label, value, onChange}) => (
+const FormInput: React.FC<{label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void}> = ({label, value, onChange}) => (
     <div>
         <label className="admin-label">{label}</label>
-        <input type="text" value={value} onChange={onChange} className="admin-input" />
+        <input type="text" value={value} onChange={onChange} className="admin-input" aria-label={label} />
     </div>
 );
-const FormTextArea: React.FC<{label: string, value: any, onChange: any}> = ({label, value, onChange}) => (
+const FormTextArea: React.FC<{label: string, value: string, onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void}> = ({label, value, onChange}) => (
     <div>
         <label className="admin-label">{label}</label>
-        <textarea value={value} onChange={onChange} rows={5} className="admin-input admin-textarea" />
+        <textarea value={value} onChange={onChange} rows={5} className="admin-input admin-textarea" aria-label={label} />
     </div>
 );
 
-const ArrayEditor: React.FC<{
-    items: any[];
-    setItems: (items: any[]) => void;
-    renderItem: (item: any, onChange: (key: string, value: any) => void, index: number) => React.ReactNode;
-    getNewItem: () => any;
-    getItemTitle: (item: any) => string;
-}> = ({ items, setItems, renderItem, getNewItem, getItemTitle }) => {
+interface ArrayEditorProps<T> {
+    items: T[];
+    setItems: (items: T[]) => void;
+    onSave?: (items: T[]) => void;
+    renderItem: (item: T, onChange: (key: keyof T, value: any, shouldSave?: boolean) => void, index: number) => React.ReactNode;
+    getNewItem: () => T;
+    getItemTitle: (item: T) => string;
+}
+
+const ArrayEditor = <T extends Record<string, any>>({ items, setItems, onSave, renderItem, getNewItem, getItemTitle }: ArrayEditorProps<T>) => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-    const handleItemChange = (index: number, key: string, value: any) => {
+    const handleItemChange = (index: number, key: keyof T, value: any, shouldSave: boolean = false) => {
         const newItems = [...items];
         newItems[index] = { ...newItems[index], [key]: value };
         setItems(newItems);
+        if (shouldSave && onSave) {
+            onSave(newItems);
+        }
     };
-
+    // ... rest of ArrayEditor (no changes needed beyond this loop)
     const handleAddItem = () => {
         setItems([...items, getNewItem()]);
         setOpenIndex(items.length);
@@ -240,7 +262,7 @@ const ArrayEditor: React.FC<{
                     </button>
                     {openIndex === index && (
                         <div className="p-4 border-t border-pm-off-white/10 space-y-3 bg-pm-dark">
-                            {renderItem(item, (key, value) => handleItemChange(index, key, value), index)}
+                            {renderItem(item, (key, value, shouldSave) => handleItemChange(index, key, value, shouldSave), index)}
                             <div className="text-right pt-2">
                                 <button type="button" onClick={() => handleDeleteItem(index)} className="text-red-500/80 hover:text-red-500 text-sm inline-flex items-center gap-1"><TrashIcon className="w-4 h-4" /> Supprimer</button>
                             </div>
@@ -255,7 +277,8 @@ const ArrayEditor: React.FC<{
     );
 };
 
-const SubArrayEditor: React.FC<{ title: string } & Omit<React.ComponentProps<typeof ArrayEditor>, 'items' | 'setItems'> & { items: any[], setItems: (items: any[]) => void }> = ({ title, ...props }) => (
+// Helper for nested editors, typing simplified for brevity
+const SubArrayEditor: React.FC<any> = ({ title, ...props }) => (
     <div className="p-3 bg-black/50 border border-pm-off-white/10 rounded-md">
         <h4 className="text-md font-bold text-pm-gold/80 mb-3">{title}</h4>
         <ArrayEditor {...props} />

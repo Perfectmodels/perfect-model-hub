@@ -90,29 +90,29 @@ export const useSupabaseDataStore = () => {
         reservationsRes, commentsRes, recoveryRes
       ] = await Promise.all([
         supabase.from('models').select('*').order('created_at', { ascending: false }),
-        supabase.from('news_items').select('*').order('date', { ascending: false }),
-        supabase.from('testimonials').select('*'),
-        supabase.from('articles').select('*').order('date', { ascending: false }),
+        (supabase.from('news_items') as any).select('*').order('date', { ascending: false }),
+        (supabase.from('testimonials') as any).select('*'),
+        (supabase.from('articles') as any).select('*').order('date', { ascending: false }),
         supabase.from('casting_applications').select('*').order('created_at', { ascending: false }),
-        supabase.from('monthly_payments').select('*').order('month', { ascending: false }),
+        (supabase.from('monthly_payments') as any).select('*').order('month', { ascending: false }),
         supabase.from('absences').select('*').order('date', { ascending: false }),
-        supabase.from('forum_threads').select('*').order('created_at', { ascending: false }),
-        supabase.from('forum_replies').select('*').order('created_at', { ascending: true }),
-        supabase.from('site_config').select('*').single(),
-        supabase.from('agency_info').select('*').single(),
-        supabase.from('agency_services').select('*'),
-        supabase.from('agency_timeline').select('*').order('year', { ascending: false }),
-        supabase.from('agency_partners').select('*'),
-        supabase.from('agency_achievements').select('*'),
-        supabase.from('social_links').select('*'),
-        supabase.from('nav_links').select('*'),
-        supabase.from('pages_content').select('*'),
-        supabase.from('site_images').select('*'),
-        supabase.from('jury_members').select('*'),
-        supabase.from('registration_staff').select('*'),
-        supabase.from('fashion_day_reservations').select('*').order('submission_date', { ascending: false }),
-        supabase.from('article_comments').select('*').order('created_at', { ascending: false }),
-        supabase.from('recovery_requests').select('*').order('timestamp', { ascending: false })
+        (supabase.from('forum_threads') as any).select('*').order('created_at', { ascending: false }),
+        (supabase.from('forum_replies') as any).select('*').order('created_at', { ascending: true }),
+        (supabase.from('site_config') as any).select('*').single(),
+        (supabase.from('agency_info') as any).select('*').single(),
+        (supabase.from('agency_services') as any).select('*'),
+        (supabase.from('agency_timeline') as any).select('*').order('year', { ascending: false }),
+        (supabase.from('agency_partners') as any).select('*'),
+        (supabase.from('agency_achievements') as any).select('*'),
+        (supabase.from('social_links') as any).select('*'),
+        (supabase.from('nav_links') as any).select('*'),
+        (supabase.from('pages_content') as any).select('*'),
+        (supabase.from('site_images') as any).select('*'),
+        (supabase.from('jury_members') as any).select('*'),
+        (supabase.from('registration_staff') as any).select('*'),
+        (supabase.from('fashion_day_reservations') as any).select('*').order('submission_date', { ascending: false }),
+        (supabase.from('article_comments') as any).select('*').order('created_at', { ascending: false }),
+        (supabase.from('recovery_requests') as any).select('*').order('timestamp', { ascending: false })
       ]);
 
       console.log('Fetched data from Supabase', { 
@@ -203,7 +203,85 @@ export const useSupabaseDataStore = () => {
   }, [fetchData]);
 
   const saveData = useCallback(async (newData: AppData) => {
-    setData(newData);
+    setData(newData); // Optimistic update
+
+    try {
+        console.log('Saving data to Supabase...', newData);
+
+        // 1. Site Config (Logo)
+        if (newData.siteConfig) {
+             // Assuming single row with id=1, or we update based on a known criteria. 
+             // Since we fetched with .single(), we can try upserting with a fixed ID or assume existing row.
+             // We'll use a specific query to update the single row if it exists, or insert.
+             // Assuming 'id' is 1 for the config row if established, or we just take the first one.
+             // Safe bet: Update where true if possible, but standard is single row with ID 1.
+             const { error } = await (supabase.from('site_config') as any).update({ logo: newData.siteConfig.logo }).eq('id', 1);
+             if (error && error.code === 'PGRST116') { // Row not found maybe? Try insert
+                 await (supabase.from('site_config') as any).insert({ id: 1, logo: newData.siteConfig.logo });
+             }
+        }
+
+        // 2. Site Images
+        if (newData.siteImages) {
+            const updates = Object.entries(newData.siteImages).map(([key, url]) => ({
+                key,
+                url
+            }));
+            if (updates.length > 0) {
+                const { error } = await (supabase.from('site_images') as any).upsert(updates, { onConflict: 'key' });
+                if (error) console.error('Error saving site_images:', error);
+            }
+        }
+
+        // 3. Social Links
+        if (newData.socialLinks) {
+            const updates = Object.entries(newData.socialLinks).map(([platform, url]) => ({
+                platform,
+                url
+            }));
+             if (updates.length > 0) {
+                const { error } = await (supabase.from('social_links') as any).upsert(updates, { onConflict: 'platform' });
+                if (error) console.error('Error saving social_links:', error);
+            }
+        }
+
+         // 4. Testimonials
+         if (newData.testimonials) {
+             const rows = newData.testimonials.map(t => ({
+                 id: t.id,
+                 name: t.name,
+                 role: t.role,
+                 quote: t.quote,
+                 image_url: t.imageUrl
+             }));
+             const { error } = await (supabase.from('testimonials') as any).upsert(rows);
+             if (error) console.error('Error saving testimonials:', error);
+         }
+         
+         // 5. Agency Partners
+         if (newData.agencyPartners) {
+             const rows = newData.agencyPartners.map(p => toSnakeCase<any>(p));
+             const { error } = await (supabase.from('agency_partners') as any).upsert(rows);
+             if (error) console.error('Error saving agency_partners:', error);
+         }
+
+         // 6. Agency Info (About, Values) - stored in agency_info table
+         if (newData.agencyInfo) {
+             // agency_info table structure is likely `about` (jsonb/text) and `values` (jsonb).
+             // Let's assume ID 1 again or single row.
+             const payload = {
+                 id: 1,
+                 about: newData.agencyInfo.about,
+                 values: newData.agencyInfo.values
+             };
+             const { error } = await (supabase.from('agency_info') as any).upsert(payload);
+             if (error) console.error('Error saving agency_info:', error);
+         }
+
+    } catch (err: any) {
+        console.error("Critical Error saving data:", err);
+        setError("Failed to save data: " + err.message);
+    }
   }, []);
 
   const saveModel = useCallback(async (model: Model) => {

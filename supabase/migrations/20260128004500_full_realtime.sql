@@ -16,4 +16,4 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.model_distinctions;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.hero_slides;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.jury_members;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.registration_staff;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.casting_applications;
+-- ALTER PUBLICATION supabase_realtime ADD TABLE public.casting_applications;
