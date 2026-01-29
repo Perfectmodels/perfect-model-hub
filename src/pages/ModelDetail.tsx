@@ -52,12 +52,10 @@ const ModelDetail: React.FC = () => {
                        <h2 className="text-3xl font-playfair font-bold text-pm-gold mb-8 border-b border-pm-gold/20 pb-4">Mensurations</h2>
                        <ul className="space-y-6 text-sm md:text-base tracking-wide text-gray-300">
                             {model.height && <li className="flex justify-between items-center"><span>Taille</span> <span className="font-bold text-white text-lg">{model.height} cm</span></li>}
-                            {model.bust && <li className="flex justify-between items-center"><span>Poitrine</span> <span className="font-bold text-white text-lg">{model.bust} cm</span></li>}
-                            {model.waist && <li className="flex justify-between items-center"><span>Taille</span> <span className="font-bold text-white text-lg">{model.waist} cm</span></li>}
-                            {model.hips && <li className="flex justify-between items-center"><span>Hanches</span> <span className="font-bold text-white text-lg">{model.hips} cm</span></li>}
-                            {model.shoeSize && <li className="flex justify-between items-center"><span>Pointure</span> <span className="font-bold text-white text-lg">{model.shoeSize}</span></li>}
-                            {model.eyeColor && <li className="flex justify-between items-center"><span>Yeux</span> <span className="font-bold text-white text-lg">{model.eyeColor}</span></li>}
-                            {model.hairColor && <li className="flex justify-between items-center"><span>Cheveux</span> <span className="font-bold text-white text-lg">{model.hairColor}</span></li>}
+                             {model.measurements?.chest && <li className="flex justify-between items-center"><span>Poitrine</span> <span className="font-bold text-white text-lg">{model.measurements.chest} cm</span></li>}
+                             {model.measurements?.waist && <li className="flex justify-between items-center"><span>Taille</span> <span className="font-bold text-white text-lg">{model.measurements.waist} cm</span></li>}
+                             {model.measurements?.hips && <li className="flex justify-between items-center"><span>Hanches</span> <span className="font-bold text-white text-lg">{model.measurements.hips} cm</span></li>}
+                             {model.measurements?.shoeSize && <li className="flex justify-between items-center"><span>Pointure</span> <span className="font-bold text-white text-lg">{model.measurements.shoeSize}</span></li>}
                        </ul>
                        
                        <div className="mt-12">

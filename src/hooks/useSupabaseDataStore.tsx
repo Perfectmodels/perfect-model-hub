@@ -96,6 +96,10 @@ export const useSupabaseDataStore = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // This project uses a database schema that is not fully reflected in the generated typed client.
+  // Cast once to avoid hundreds of "table name is never" type errors while keeping runtime behavior identical.
+  const sb = supabase as any;
+
   const fetchData = useCallback(async () => {
     try {
       const [
@@ -105,30 +109,30 @@ export const useSupabaseDataStore = () => {
         socialRes, navRes, pagesRes, imagesRes, juryRes, staffRes,
         reservationsRes, commentsRes, recoveryRes
       ] = await Promise.all([
-        supabase.from('models').select('*').order('created_at', { ascending: false }),
-        (supabase.from('news_items') as any).select('*').order('date', { ascending: false }),
-        (supabase.from('testimonials') as any).select('*'),
-        (supabase.from('articles') as any).select('*').order('date', { ascending: false }),
-        supabase.from('casting_applications').select('*').order('created_at', { ascending: false }),
-        (supabase.from('monthly_payments') as any).select('*').order('month', { ascending: false }),
-        supabase.from('absences').select('*').order('date', { ascending: false }),
-        (supabase.from('forum_threads') as any).select('*').order('created_at', { ascending: false }),
-        (supabase.from('forum_replies') as any).select('*').order('created_at', { ascending: true }),
-        (supabase.from('site_config') as any).select('*').single(),
-        (supabase.from('agency_info') as any).select('*').single(),
-        (supabase.from('agency_services') as any).select('*'),
-        (supabase.from('agency_timeline') as any).select('*').order('year', { ascending: false }),
-        (supabase.from('agency_partners') as any).select('*'),
-        (supabase.from('agency_achievements') as any).select('*'),
-        (supabase.from('social_links') as any).select('*'),
-        (supabase.from('nav_links') as any).select('*'),
-        (supabase.from('pages_content') as any).select('*'),
-        (supabase.from('site_images') as any).select('*'),
-        (supabase.from('jury_members') as any).select('*'),
-        (supabase.from('registration_staff') as any).select('*'),
-        (supabase.from('fashion_day_reservations') as any).select('*').order('submission_date', { ascending: false }),
-        (supabase.from('article_comments') as any).select('*').order('created_at', { ascending: false }),
-        (supabase.from('recovery_requests') as any).select('*').order('timestamp', { ascending: false })
+        sb.from('models').select('*').order('created_at', { ascending: false }),
+        sb.from('news_items').select('*').order('date', { ascending: false }),
+        sb.from('testimonials').select('*'),
+        sb.from('articles').select('*').order('date', { ascending: false }),
+        sb.from('casting_applications').select('*').order('created_at', { ascending: false }),
+        sb.from('monthly_payments').select('*').order('month', { ascending: false }),
+        sb.from('absences').select('*').order('date', { ascending: false }),
+        sb.from('forum_threads').select('*').order('created_at', { ascending: false }),
+        sb.from('forum_replies').select('*').order('created_at', { ascending: true }),
+        sb.from('site_config').select('*').single(),
+        sb.from('agency_info').select('*').single(),
+        sb.from('agency_services').select('*'),
+        sb.from('agency_timeline').select('*').order('year', { ascending: false }),
+        sb.from('agency_partners').select('*'),
+        sb.from('agency_achievements').select('*'),
+        sb.from('social_links').select('*'),
+        sb.from('nav_links').select('*'),
+        sb.from('pages_content').select('*'),
+        sb.from('site_images').select('*'),
+        sb.from('jury_members').select('*'),
+        sb.from('registration_staff').select('*'),
+        sb.from('fashion_day_reservations').select('*').order('submission_date', { ascending: false }),
+        sb.from('article_comments').select('*').order('created_at', { ascending: false }),
+        sb.from('recovery_requests').select('*').order('timestamp', { ascending: false })
       ]);
 
       console.log('Fetched data from Supabase', { 
@@ -266,9 +270,9 @@ export const useSupabaseDataStore = () => {
              // We'll use a specific query to update the single row if it exists, or insert.
              // Assuming 'id' is 1 for the config row if established, or we just take the first one.
              // Safe bet: Update where true if possible, but standard is single row with ID 1.
-             const { error } = await (supabase.from('site_config') as any).update({ logo: newData.siteConfig.logo }).eq('id', 1);
+             const { error } = await sb.from('site_config').update({ logo: newData.siteConfig.logo }).eq('id', 1);
              if (error && error.code === 'PGRST116') { // Row not found maybe? Try insert
-                 await (supabase.from('site_config') as any).insert({ id: 1, logo: newData.siteConfig.logo });
+                  await sb.from('site_config').insert({ id: 1, logo: newData.siteConfig.logo });
              }
         }
 
@@ -279,7 +283,7 @@ export const useSupabaseDataStore = () => {
                 url
             }));
             if (updates.length > 0) {
-                const { error } = await (supabase.from('site_images') as any).upsert(updates, { onConflict: 'key' });
+                 const { error } = await sb.from('site_images').upsert(updates, { onConflict: 'key' });
                 if (error) console.error('Error saving site_images:', error);
             }
         }
@@ -291,7 +295,7 @@ export const useSupabaseDataStore = () => {
                 url
             }));
              if (updates.length > 0) {
-                const { error } = await (supabase.from('social_links') as any).upsert(updates, { onConflict: 'platform' });
+                const { error } = await sb.from('social_links').upsert(updates, { onConflict: 'platform' });
                 if (error) console.error('Error saving social_links:', error);
             }
         }
@@ -299,20 +303,20 @@ export const useSupabaseDataStore = () => {
          // 4. Testimonials
          if (newData.testimonials) {
              const rows = newData.testimonials.map(t => ({
-                 id: t.id,
+                  id: (t as any).id,
                  name: t.name,
                  role: t.role,
                  quote: t.quote,
                  image_url: t.imageUrl
              }));
-             const { error } = await (supabase.from('testimonials') as any).upsert(rows);
+              const { error } = await sb.from('testimonials').upsert(rows);
              if (error) console.error('Error saving testimonials:', error);
          }
          
          // 5. Agency Partners
          if (newData.agencyPartners) {
              const rows = newData.agencyPartners.map(p => toSnakeCase<any>(p));
-             const { error } = await (supabase.from('agency_partners') as any).upsert(rows);
+              const { error } = await sb.from('agency_partners').upsert(rows);
              if (error) console.error('Error saving agency_partners:', error);
          }
 
@@ -325,7 +329,7 @@ export const useSupabaseDataStore = () => {
                  about: newData.agencyInfo.about,
                  values: newData.agencyInfo.values
              };
-             const { error } = await (supabase.from('agency_info') as any).upsert(payload);
+              const { error } = await sb.from('agency_info').upsert(payload);
              if (error) console.error('Error saving agency_info:', error);
          }
 
@@ -336,14 +340,14 @@ export const useSupabaseDataStore = () => {
   }, []);
 
   const saveModel = useCallback(async (model: Model) => {
-    const { error } = await supabase
+    const { error } = await sb
       .from('models')
       .upsert(toSnakeCase<any>(model));
     if (error) throw error;
   }, []);
 
   const saveCastingApplication = useCallback(async (app: CastingApplication) => {
-    const { error } = await supabase
+    const { error } = await sb
       .from('casting_applications')
       .upsert(toSnakeCase<any>(app));
     if (error) throw error;
