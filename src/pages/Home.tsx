@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import SEO from '../components/components/SEO';
 import TestimonialCarousel from "../components/components/TestimonialCarousel";
 import { useData } from '../contexts/DataContext';

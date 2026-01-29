@@ -8,7 +8,7 @@ import { ChevronLeftIcon, TrashIcon, EyeIcon, XMarkIcon } from '@heroicons/react
 const AdminFashionDay: React.FC = () => {
     const { data, saveData, isInitialized } = useData();
     const [localApps, setLocalApps] = useState<FashionDayApplication[]>([]);
-    const [filter, setFilter] = useState<string>('Toutes');
+    const [filter, setFilter] = useState<FashionDayApplication['status'] | 'Toutes'>('Toutes');
     const [selectedApp, setSelectedApp] = useState<FashionDayApplication | null>(null);
 
     useEffect(() => {
@@ -30,7 +30,7 @@ const AdminFashionDay: React.FC = () => {
         }
     };
 
-    const handleUpdateStatus = async (appId: string, newStatus: string) => {
+    const handleUpdateStatus = async (appId: string, newStatus: FashionDayApplication['status']) => {
         if (!data) return;
         const updatedApps = localApps.map(app => app.id === appId ? { ...app, status: newStatus } : app);
         await saveData({ ...data, fashionDayApplications: updatedApps });
@@ -49,7 +49,7 @@ const AdminFashionDay: React.FC = () => {
         }
     }
 
-    const statusOptions = ['Toutes', 'Nouveau', 'En attente', 'Accepté', 'Refusé'];
+    const statusOptions: Array<FashionDayApplication['status'] | 'Toutes'> = ['Toutes', 'Nouveau', 'En attente', 'Accepté', 'Refusé'];
 
     return (
         <>
